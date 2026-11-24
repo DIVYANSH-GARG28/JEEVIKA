@@ -2,7 +2,7 @@
 ### *Bharat’s First Vernacular-First Clinical Operating System & Assistive Hospital Platform*
 
 [![Pure Software](https://img.shields.io/badge/Architecture-100%25%20Pure%20Software%20(Zero%20Hardware)-blue)](frontend/website)
-[![Contributors](https://img.shields.io/badge/Core%20Team-2%20Engineers-purple)](#-core-engineering--clinical-team-2-contributors)
+[![Collaborators](https://img.shields.io/badge/Core%20Team-Collaborators-purple)](#-core-engineering--clinical-team-collaborators)
 [![TypeScript Strict](https://img.shields.io/badge/TypeScript-Strict%20Mode-3178C6?logo=typescript&logoColor=white)](tsconfig.json)
 [![React 18](https://img.shields.io/badge/Frontend-React%2018%20%2B%20Vite-61DAFB?logo=react&logoColor=black)](frontend/website)
 [![Hono API](https://img.shields.io/badge/Backend-Hono%20%7C%20Node%2020-E36002?logo=hono&logoColor=white)](backend)
@@ -398,12 +398,16 @@ In high-volume public hospitals handling 200+ OPD encounters daily, repetitive d
 
 ---
 
-## 👥 Core Engineering & Clinical Team (2 Contributors)
+## 👥 Core Engineering & Clinical Team (Collaborators)
 
 | Contributor | GitHub Handle | Core Engineering & Clinical Role |
 |:---|:---|:---|
 | **Divyansh Garg** | [`@DIVYANSH-GARG28`](https://github.com/DIVYANSH-GARG28) | **Lead Architect & Full-Stack Systems Lead** — Distributed Hono Backend, Zero-Hardware Triage & Platform Verification |
 | **Divyansh Gupta** | [`@Divyanshgupta2580`](https://github.com/Divyanshgupta2580) | **Clinical Operations & EHR Lead** — OPD Workflows, CBC Engine, Pharmacy POS & FEFO Inventory |
+| **Ruchir Jain** | [`@ruchir0015`](https://github.com/ruchir0015) | **Full-Stack Engineering & Platform Infrastructure** — Microservices, Telemetry & Real-Time Sync |
+| **Savita Kumari** | [`@SavitaK8`](https://github.com/SavitaK8) | **Frontend Systems & UI Design** — Responsive Clinical UI, Accessibility & Component Architecture |
+| **Charu Singh** | [`@singhcharuoct07`](https://github.com/singhcharuoct07) | **Clinical Workflows & Systems Validation** — Healthcare Data Schemas & Integration Protocols |
+| **Dipak Choudhary** | [`@VOIDXIO`](https://github.com/VOIDXIO) | **Backend Systems & Algorithmic Optimization** — Data Pipelines, Caching & Performance Optimization |
 
 ---
 
