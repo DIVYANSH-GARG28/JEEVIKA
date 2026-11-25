@@ -416,3 +416,5 @@ In high-volume public hospitals handling 200+ OPD encounters daily, repetitive d
 * **Statutory Registration:** `#NMC-DL-2018-84729` (National Medical Commission)
 * **Legal Framework:** Conforms to NMC Registered Medical Practitioner (Professional Conduct) Regulations 2023, Digital Personal Data Protection (DPDP) Act 2023, and Ayushman Bharat Digital Mission (ABDM Milestone 2).
 * **Platform:** Jeevika — *Continuity of Care Operating System (100% Pure Software SaaS)*
+
+MSMW85
