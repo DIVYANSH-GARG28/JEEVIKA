@@ -39,10 +39,10 @@ async function translateMedicalText(
               content: `Patient statement: "${text}"`
             }
           ],
-          max_tokens: 120,
+          max_tokens: 600,
           temperature: 0.1
         }),
-        signal: AbortSignal.timeout(6000)
+        signal: AbortSignal.timeout(10000)
       });
 
       if (covexRes.ok) {
@@ -141,12 +141,12 @@ async function translateMedicalText(
 
   // 5. Common Indian Vernacular Clinical Dictionary (Deterministic high-speed fallback)
   const medicalDictionary: [RegExp, string][] = [
-    [/छाती|सीने|chest|dhadkan/i, "Severe acute chest pain and substernal discomfort"],
-    [/सिरदर्द|सर\s*दर्द|headache|चक्कर|dizziness/i, "Patient reports persistent headache and dizziness"],
-    [/घुटने|घुटनों|घुटना|जोड़ों|joint|knee|gathiya/i, "Bilateral knee joint pain with morning stiffness for 6 months."],
-    [/बुखार|fever|ठंड|chills|bukhar/i, "High-grade fever accompanied by chills and body ache"],
-    [/पेट|stomach|gas|acidity|जलन|pet/i, "Epigastric burning sensation, severe acidity, and flatulence"],
-    [/सांस|breathless|asthma|dum/i, "Acute shortness of breath and respiratory distress"],
+    [/छाती|सीने|chest|seene\s*(?:me|mai|mein)?\s*dard|dhadkan/i, "Severe acute chest pain and substernal discomfort"],
+    [/सिरदर्द|सर\s*(?:में|मे)?\s*दर्द|s[aei]r\s*(?:m[ae]i?n?|me)?\s*dard|headache|चक्कर|chakkar|dizziness/i, "Patient reports persistent headache / cephalalgia"],
+    [/घुटने|घुटनों|घुटना|जोड़ों|ghutn[eo]|joint|knee|gathiya/i, "Bilateral knee joint pain and functional stiffness"],
+    [/बुखार|fever|ठंड|chills|bukhar|bukhaar/i, "High-grade fever accompanied by chills and body ache"],
+    [/पेट|stomach|gas|acidity|जलन|pet\s*(?:me|mai|mein)?\s*(?:dard|jalan)/i, "Epigastric burning sensation, acidity, or abdominal discomfort"],
+    [/सांस|breathless|asthma|saans|dum/i, "Acute shortness of breath and respiratory distress"],
     [/उल्टी|vomit|nausea|ulti/i, "Episodes of recurrent vomiting and nausea"],
     [/कमजोरी|fatigue|थकान|kamzori/i, "Generalized physical weakness and chronic fatigue"],
   ];
@@ -173,7 +173,7 @@ async function translateMedicalText(
     }
   } catch {}
 
-  return { translation: `Bilateral knee joint pain with morning stiffness for 6 months.`, source: "clinical-default" };
+  return { translation: `Patient reports: ${text}`, source: "verbatim-clinical" };
 }
 
 intakeRouter.post("/session", async (c) => {
@@ -377,53 +377,122 @@ intakeRouter.post("/chat", async (c) => {
   const latencyMs = Number((performance.now() - start).toFixed(1));
   const isRedFlag = redFlags.length > 0 || triageResult.tier === "emergency";
   const nextQuestion = isRedFlag ? null : getIntakeQuestion(systemType, stepIndex);
-  const complete = isRedFlag || nextQuestion === null;
+  let complete = isRedFlag || nextQuestion === null;
   let replyText = nextQuestion ?? "Thank you. Your answers have been recorded for the clinician.";
+  let clinicalSummary: string | undefined;
+
   if (isRedFlag) {
     replyText = "Urgent symptoms need immediate in-person clinical assessment. Please alert the clinic staff now.";
-  } else if (nextQuestion && language !== "en-IN") {
-    if (c.env.SARVAM_API_KEY) {
+    const summaryRes = await translateMedicalText(transcript, language, c.env);
+    clinicalSummary = summaryRes.translation;
+  } else {
+    // Primary: Covexcode DeepSeek-V4 Context-Aware Clinical Intake Assistant
+    const covexEndpoint = (c.env as any)?.COVEXCODE_ENDPOINT || process.env.COVEXCODE_ENDPOINT || "https://llm.covexcode.com/event/v1";
+    const covexApiKey = (c.env as any)?.COVEXCODE_API_KEY || process.env.COVEXCODE_API_KEY || "bx-live-1926081e3c39235d71f8b0d6f647480e";
+    const covexModel = (c.env as any)?.COVEXCODE_MODEL || process.env.COVEXCODE_MODEL || "deepseek-v4-flash";
+
+    let usedCovex = false;
+    if (covexApiKey) {
       try {
-        const translation = await fetch("https://api.sarvam.ai/translate", {
+        const turnsHistory = turns.map((t, i) => `Turn ${i + 1} [Q: ${t.question} -> Patient: ${t.answer}]`).join("; ");
+        const shouldComplete = stepIndex >= 2;
+        const covexRes = await fetch(`${covexEndpoint}/chat/completions`, {
           method: "POST",
           headers: {
+            "Authorization": `Bearer ${covexApiKey}`,
             "Content-Type": "application/json",
-            "api-subscription-key": c.env.SARVAM_API_KEY,
+            "User-Agent": "JEEVIKA-HealthOS/1.0"
           },
           body: JSON.stringify({
-            input: nextQuestion,
-            source_language_code: "en-IN",
-            target_language_code: language,
-            model: "mayura:v1",
-            mode: "formal",
+            model: covexModel,
+            messages: [
+              {
+                role: "system",
+                content: `You are JEEVIKA's empathetic clinical intake nurse. Given the patient's full conversation history and latest answer, respond ONLY with raw JSON containing 3 keys: "reply_text" (if step_completed is false, ask ONE concise, specific clinical follow-up question tailored to their exact symptom in ${language === "hi-IN" ? "simple Hindi" : language === "en-IN" ? "clear English or simple Hindi matching the user's style" : `language ${language}`}; if step_completed is true, briefly confirm all symptoms are recorded for the doctor), "clinical_summary" (a single concise formal medical English sentence combining ALL symptoms, locations, and durations reported across all turns so far — never invent unrelated symptoms), and "step_completed" (boolean: ${shouldComplete ? "true" : "false"}).`
+              },
+              {
+                role: "user",
+                content: `Step: ${stepIndex}. Prior history: [${turnsHistory || "None"}]. Latest patient input: "${currentInput}".`
+              }
+            ],
+            max_tokens: 600,
+            temperature: 0.1
           }),
+          signal: AbortSignal.timeout(10000)
         });
-        if (translation.ok) {
-          const translated = z.object({ translated_text: z.string().trim().min(1).max(500) })
-            .safeParse(await translation.json());
-          if (translated.success) replyText = translated.data.translated_text;
-        }
-      } catch {}
-    } else if (c.env.GEMINI_API_KEY) {
-      try {
-        const geminiRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${c.env.GEMINI_API_KEY}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{ text: `Translate this clinical intake question into language ${language}. Output only the translation:\n\n${nextQuestion}` }]
-              }]
-            })
+
+        if (covexRes.ok) {
+          const data = await covexRes.json() as any;
+          const rawContent = data?.choices?.[0]?.message?.content?.trim() || "";
+          const jsonMatch = rawContent.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsedJson = JSON.parse(jsonMatch[0]);
+            if (typeof parsedJson.reply_text === "string" && parsedJson.reply_text.trim()) {
+              replyText = parsedJson.reply_text.trim();
+            }
+            if (typeof parsedJson.clinical_summary === "string" && parsedJson.clinical_summary.trim()) {
+              clinicalSummary = parsedJson.clinical_summary.trim();
+            }
+            if (typeof parsedJson.step_completed === "boolean") {
+              complete = parsedJson.step_completed || shouldComplete;
+            }
+            usedCovex = true;
           }
-        );
-        if (geminiRes.ok) {
-          const gJson = (await geminiRes.json()) as any;
-          const translated = gJson?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-          if (translated) replyText = translated;
         }
-      } catch {}
+      } catch (e) {
+        console.warn("[COVEX_INTAKE_CHAT] Fallback to static question:", e);
+      }
+    }
+
+    if (!usedCovex && nextQuestion && language !== "en-IN") {
+      if (c.env.SARVAM_API_KEY) {
+        try {
+          const translation = await fetch("https://api.sarvam.ai/translate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "api-subscription-key": c.env.SARVAM_API_KEY,
+            },
+            body: JSON.stringify({
+              input: nextQuestion,
+              source_language_code: "en-IN",
+              target_language_code: language,
+              model: "mayura:v1",
+              mode: "formal",
+            }),
+          });
+          if (translation.ok) {
+            const translated = z.object({ translated_text: z.string().trim().min(1).max(500) })
+              .safeParse(await translation.json());
+            if (translated.success) replyText = translated.data.translated_text;
+          }
+        } catch {}
+      } else if (c.env.GEMINI_API_KEY) {
+        try {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${c.env.GEMINI_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [{ text: `Translate this clinical intake question into language ${language}. Output only the translation:\n\n${nextQuestion}` }]
+                }]
+              })
+            }
+          );
+          if (geminiRes.ok) {
+            const gJson = (await geminiRes.json()) as any;
+            const translated = gJson?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+            if (translated) replyText = translated;
+          }
+        } catch {}
+      }
+    }
+
+    if (!clinicalSummary) {
+      const summaryRes = await translateMedicalText(transcript, language, c.env);
+      clinicalSummary = summaryRes.translation;
     }
   }
 
@@ -431,6 +500,7 @@ intakeRouter.post("/chat", async (c) => {
     encounter_id: parsed.data.encounter_id ?? null,
     system_type: systemType,
     reply_text: replyText,
+    clinical_summary: clinicalSummary,
     suggested_options: [],
     step_completed: complete,
     red_flag: {

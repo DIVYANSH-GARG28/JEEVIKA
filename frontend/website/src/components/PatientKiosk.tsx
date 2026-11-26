@@ -807,11 +807,48 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
     isEmergency: false
   });
 
+  const resetIntakeConversation = () => {
+    translationAbort.current?.abort();
+    if (translationTimer.current) clearTimeout(translationTimer.current);
+    setTypedSymptom('');
+    setIntakeTurns([]);
+    setIntakeStep(0);
+    setIntakeComplete(false);
+    setIntakePrompt('');
+    setIntakeTriage(null);
+    setTranslationStatus('idle');
+    setCurrentPatient((prev) => ({
+      ...prev,
+      selectedSymptom: '',
+      englishTranslation: '',
+      isEmergency: false,
+    }));
+  };
+
   const submitIntakeTurn = async (input: string) => {
     const responseText = input.trim();
     if (!responseText || isSubmittingIntake || intakeComplete) return;
     setIsSubmittingIntake(true);
-    updateSymptomAndTranslate(responseText);
+
+    // Abort any single-field debounce translation so full context wins
+    translationAbort.current?.abort();
+    if (translationTimer.current) clearTimeout(translationTimer.current);
+
+    const cumulativeAnswers = [...intakeTurns.map(t => t.answer), responseText];
+    const fullTranscript = cumulativeAnswers.join(' • ');
+
+    setCurrentPatient((previous) => ({
+      ...previous,
+      selectedSymptom: fullTranscript,
+    }));
+    setTranslationStatus('translating');
+
+    const redFlags = getClinicalRedFlags(fullTranscript);
+    if (redFlags.length > 0) {
+      setShowRedFlagBanner(true);
+      setCurrentPatient((previous) => ({ ...previous, isEmergency: true }));
+    }
+
     try {
       const response = await fetch(`${CLOUDFLARE_API_BASE}/intake/chat`, {
         method: 'POST',
@@ -828,6 +865,7 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
       const result = await response.json() as {
         error?: string;
         reply_text?: string;
+        clinical_summary?: string;
         step_completed?: boolean;
         red_flag?: { is_triggered?: boolean };
         triage?: Record<string, unknown>;
@@ -837,7 +875,7 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
       }
 
       const updatedTurns = [...intakeTurns, {
-        question: intakePrompt || 'Chief complaint',
+        question: intakePrompt || dict.aiQuestion || 'Chief complaint',
         answer: responseText,
       }];
       setIntakeTurns(updatedTurns);
@@ -845,14 +883,28 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
       setIntakeStep((step) => step + 1);
       setIntakeComplete(Boolean(result.step_completed));
       setIntakeTriage(result.triage ?? null);
+
+      const summary = result.clinical_summary?.trim();
+      if (summary && !summary.toUpperCase().includes('PLEASE SELECT TWO DISTINCT LANGUAGES')) {
+        setCurrentPatient((patient) => ({
+          ...patient,
+          selectedSymptom: fullTranscript,
+          englishTranslation: summary,
+          isEmergency: Boolean(result.red_flag?.is_triggered) || patient.isEmergency,
+        }));
+        setTranslationStatus('translated');
+      } else {
+        updateSymptomAndTranslate(fullTranscript);
+      }
+
       if (result.red_flag?.is_triggered) {
         setShowRedFlagBanner(true);
-        setCurrentPatient((patient) => ({ ...patient, isEmergency: true }));
       }
       setTypedSymptom('');
       speakText(result.reply_text);
     } catch (error) {
       setTokenError(error instanceof Error ? error.message : 'The intake service could not process this response.');
+      updateSymptomAndTranslate(fullTranscript);
     } finally {
       setIsSubmittingIntake(false);
     }
@@ -1311,6 +1363,10 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
       setShowRedFlagBanner(true);
     }
 
+    setIntakeTurns([]);
+    setIntakeStep(0);
+    setIntakeComplete(false);
+    setIntakePrompt('');
     updateSymptomAndTranslate(native);
     setCurrentPatient(prev => ({ ...prev, isEmergency: prev.isEmergency || isRed }));
     speakText(native);
@@ -1322,7 +1378,7 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
     if (isIssuingToken) return;
     setIsIssuingToken(true);
     setTokenError('');
-    const chiefComplaint = intakeTurns[0]?.answer || currentPatient.selectedSymptom || 'General OPD consultation';
+    const chiefComplaint = currentPatient.englishTranslation || currentPatient.selectedSymptom || intakeTurns[0]?.answer || 'General OPD consultation';
     const intakeTranscript = intakeTurns
       .map(({ question, answer }) => `${question}: ${answer}`)
       .join('\n');
@@ -2177,7 +2233,13 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
                 <VoiceInput
                   language={currentLanguage}
                   onType={() => setIntakeMode("type")}
-                  onTranscript={updateSymptomAndTranslate}
+                  onTranscript={(t) => {
+                    if (intakeTurns.length > 0) {
+                      setTypedSymptom(t);
+                    } else {
+                      updateSymptomAndTranslate(t);
+                    }
+                  }}
                 />
               )}
 
@@ -2185,21 +2247,43 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
               {intakeMode === 'type' && (
                 <div className="space-y-3 max-w-2xl mx-auto text-left">
                   <div className="space-y-1">
-                    <label className="font-bold text-xs text-slate-800 block">{dict.typePrompt}</label>
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="font-bold text-xs text-slate-800 block">
+                        {intakeTurns.length > 0
+                          ? `Reply to AI Triage Question (${intakeTurns.length}/3):`
+                          : dict.typePrompt}
+                      </label>
+                      {intakeTurns.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={resetIntakeConversation}
+                          className="text-[11px] font-bold text-rose-600 hover:text-rose-800 underline cursor-pointer"
+                        >
+                          ↺ Start New Complaint
+                        </button>
+                      )}
+                    </div>
                     <textarea
                       rows={3}
                       value={typedSymptom}
-                      onChange={e => updateSymptomAndTranslate(e.target.value)}
+                      onChange={e => {
+                        if (intakeTurns.length > 0) {
+                          setTypedSymptom(e.target.value);
+                        } else {
+                          updateSymptomAndTranslate(e.target.value);
+                        }
+                      }}
+                      placeholder={intakeTurns.length > 0 ? 'Type your answer to the question above (e.g., 6 months, severe at night)...' : 'Type your symptom (e.g., sar mai dard, fever since 2 days)...'}
                       className="w-full p-3 text-sm text-slate-900 border-2 border-slate-300 rounded-xl focus:border-[#223D79] focus:ring-2 focus:ring-[#223D79]/20 focus:outline-none transition font-medium"
                     />
                     <div className="flex justify-end pt-1">
                       <button
                         type="button"
                         onClick={() => void submitIntakeTurn(typedSymptom)}
-                        disabled={isSubmittingIntake || intakeComplete}
-                        className="px-3 py-1.5 bg-[#223D79] hover:bg-[#1a2f5e] text-white rounded-lg text-xs font-bold transition shadow-sm"
+                        disabled={isSubmittingIntake || intakeComplete || !typedSymptom.trim()}
+                        className="px-3.5 py-2 bg-[#223D79] hover:bg-[#1a2f5e] disabled:opacity-50 text-white rounded-lg text-xs font-bold transition shadow-sm cursor-pointer"
                       >
-                        {isSubmittingIntake ? 'Processing…' : intakeComplete ? 'Intake complete' : dict.typeTranslateBtn || '⚡ Translate & Analyze ➔'}
+                        {isSubmittingIntake ? '⚡ Covexcode AI Reasoning…' : intakeComplete ? 'Intake complete' : intakeTurns.length > 0 ? 'Submit Answer ➔' : (dict.typeTranslateBtn || '⚡ Translate & Analyze ➔')}
                       </button>
                     </div>
                   </div>
@@ -2215,7 +2299,12 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
                       ].map(chip => (
                         <button
                           key={chip.text}
+                          type="button"
                           onClick={() => {
+                            setIntakeTurns([]);
+                            setIntakeStep(0);
+                            setIntakeComplete(false);
+                            setIntakePrompt('');
                             updateSymptomAndTranslate(chip.val);
                           }}
                           className="px-2.5 py-1.5 bg-slate-50 hover:bg-blue-50 text-slate-800 hover:text-blue-900 border border-slate-200 hover:border-blue-400 rounded-lg text-[11px] font-medium transition text-left"
@@ -2228,24 +2317,47 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
                 </div>
               )}
 
-              {/* Shared Transcription & Translation Cards (EXACT SCREENSHOT) */}
+              {/* Conversation History Strip */}
+              {intakeTurns.length > 0 && (
+                <div className="w-full p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-left space-y-1.5">
+                  <div className="text-[10px] uppercase font-bold text-blue-800 tracking-wider">
+                    💬 Recorded Clinical Intake Conversation:
+                  </div>
+                  <div className="space-y-1">
+                    {intakeTurns.map((turn, idx) => (
+                      <div key={idx} className="text-xs text-slate-700 flex items-start gap-1.5">
+                        <span className="font-mono font-bold text-blue-700 shrink-0">#{idx + 1}:</span>
+                        <span>
+                          <strong className="text-slate-900">{turn.answer}</strong>{' '}
+                          <span className="text-slate-500 text-[11px]">({turn.question})</span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Shared Transcription & Translation Cards */}
               <div className="w-full space-y-2 mt-2 pt-2 border-t border-slate-100">
                 <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-left flex items-center justify-between gap-2">
                   <div className="flex-1">
                     <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">🎙️ Spoken / Typed Patient Input (Native):</span>
                     <p className="text-xs text-slate-800 font-semibold italic mt-0.5 min-h-[18px]">
-                      "{currentPatient.selectedSymptom || 'मुझे 6 महीने से दोनों घुटनों में दर्द है'}"
+                      {currentPatient.selectedSymptom ? `"${currentPatient.selectedSymptom}"` : 'Speak or type your symptom above.'}
                     </p>
                   </div>
-                  <button
-                    onClick={() => speakText(currentPatient.selectedSymptom || 'मुझे 6 महीने से दोनों घुटनों में दर्द है')}
-                    className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-[#223D79] border border-slate-300 rounded-lg text-[11px] font-bold flex items-center gap-1 shadow-sm transition"
-                  >
-                    <svg className="w-3.5 h-3.5 text-[#223D79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                    </svg>
-                    <span>{dict.listenBtn || 'Listen'}</span>
-                  </button>
+                  {currentPatient.selectedSymptom && (
+                    <button
+                      type="button"
+                      onClick={() => speakText(currentPatient.selectedSymptom)}
+                      className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-[#223D79] border border-slate-300 rounded-lg text-[11px] font-bold flex items-center gap-1 shadow-sm transition"
+                    >
+                      <svg className="w-3.5 h-3.5 text-[#223D79]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      </svg>
+                      <span>{dict.listenBtn || 'Listen'}</span>
+                    </button>
+                  )}
                 </div>
 
                 <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-left">
@@ -2264,7 +2376,7 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
                       : translationStatus === 'unavailable'
                         ? 'Translation unavailable. Original patient words are preserved above.'
                         : (currentPatient.englishTranslation || '').toUpperCase().includes('PLEASE SELECT TWO DISTINCT LANGUAGES')
-                          ? 'Bilateral knee joint pain with morning stiffness for 6 months.'
+                          ? 'Translation will appear here after you speak or type.'
                           : currentPatient.englishTranslation || 'Translation will appear here after you speak or type.'}
                   </p>
                 </div>
