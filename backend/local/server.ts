@@ -39,7 +39,7 @@ serve(
         MARITIME_BASE_URL: process.env.MARITIME_BASE_URL ?? "https://api.maritime.sh",
         MARITIME_PARTICIPANT_CODE: process.env.MARITIME_PARTICIPANT_CODE ?? "VIHAANX",
         COVEXCODE_ENDPOINT: process.env.COVEXCODE_ENDPOINT ?? "https://llm.covexcode.com/event/v1",
-        COVEXCODE_API_KEY: process.env.COVEXCODE_API_KEY ?? "bx-live-1926081e3c39235d71f8b0d6f647480e",
+        COVEXCODE_API_KEY: process.env.COVEXCODE_API_KEY ?? "bx-live-4a8ec18ec6c885f28c0d72be6369a5be",
         COVEXCODE_MODEL: process.env.COVEXCODE_MODEL ?? "deepseek-v4-flash",
         ASSETS: { fetch: (req) => Promise.resolve(assets.fetch(req)) },
       }),

@@ -17,7 +17,7 @@ async function translateMedicalText(
 
   // 1. Primary: Covexcode DeepSeek-V4 Clinical Scribe & Translator (Hack with Delhi 4.0 Sponsor Track)
   const covexEndpoint = env?.COVEXCODE_ENDPOINT || process.env.COVEXCODE_ENDPOINT || "https://llm.covexcode.com/event/v1";
-  const covexApiKey = env?.COVEXCODE_API_KEY || process.env.COVEXCODE_API_KEY || "bx-live-1926081e3c39235d71f8b0d6f647480e";
+  const covexApiKey = env?.COVEXCODE_API_KEY || process.env.COVEXCODE_API_KEY || "bx-live-4a8ec18ec6c885f28c0d72be6369a5be";
   const covexModel = env?.COVEXCODE_MODEL || process.env.COVEXCODE_MODEL || "deepseek-v4-flash";
 
   if (covexApiKey && !isTestEnv) {
@@ -392,7 +392,7 @@ intakeRouter.post("/chat", async (c) => {
   } else {
     // Primary: Covexcode DeepSeek-V4 Context-Aware Clinical Intake Assistant
     const covexEndpoint = (c.env as any)?.COVEXCODE_ENDPOINT || process.env.COVEXCODE_ENDPOINT || "https://llm.covexcode.com/event/v1";
-    const covexApiKey = (c.env as any)?.COVEXCODE_API_KEY || process.env.COVEXCODE_API_KEY || "bx-live-1926081e3c39235d71f8b0d6f647480e";
+    const covexApiKey = (c.env as any)?.COVEXCODE_API_KEY || process.env.COVEXCODE_API_KEY || "bx-live-4a8ec18ec6c885f28c0d72be6369a5be";
     const covexModel = (c.env as any)?.COVEXCODE_MODEL || process.env.COVEXCODE_MODEL || "deepseek-v4-flash";
 
     let usedCovex = false;

@@ -20,7 +20,7 @@ function getCovexConfig(c?: any) {
     
   const apiKey = (c?.env?.COVEXCODE_API_KEY as string | undefined) || 
     process.env.COVEXCODE_API_KEY || 
-    "bx-live-1926081e3c39235d71f8b0d6f647480e";
+    "bx-live-4a8ec18ec6c885f28c0d72be6369a5be";
     
   const model = (c?.env?.COVEXCODE_MODEL as string | undefined) || 
     process.env.COVEXCODE_MODEL || 
@@ -100,14 +100,14 @@ covexRouter.post("/chat", async (c) => {
         messages: [
           {
             role: "system",
-            content: "You are JEEVIKA's Clinical AI Assistant, specialized in Indian healthcare (Ayushman Bharat, PMBJP Jan Aushadhi generic substitutions, and NMC RMP standards). Provide concise, direct, evidence-based clinical assessments with differential diagnosis, red flags, and PMBJP generic drug substitutions. Be concise and prioritize the final clinical protocol."
+            content: "You are JEEVIKA's Clinical AI Assistant, specialized in Indian healthcare (Ayushman Bharat, PMBJP Jan Aushadhi generic substitutions, and NMC RMP standards). Keep internal reasoning brief and provide concise, direct, evidence-based clinical assessments with differential diagnosis, red flags, and PMBJP generic drug substitutions."
           },
           { role: "user", content: prompt }
         ],
         max_tokens: 4096,
         temperature: 0.2
       }),
-      signal: AbortSignal.timeout(25000)
+      signal: AbortSignal.timeout(45000)
     });
 
     const elapsedMs = Date.now() - startTime;
