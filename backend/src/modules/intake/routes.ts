@@ -5,20 +5,19 @@ import { getClinicalRedFlags, getIntakeQuestion } from "../../../../packages/eng
 import { savePatientToStore, type PatientRecord } from "../../index";
 import type { Database } from "../../database";
 import { tokenHash } from "../../security";
+import { getCovexConfig } from "../covexcode";
 
 export const intakeRouter = new Hono<{ Bindings: { SARVAM_API_KEY?: string; GEMINI_API_KEY?: string; GROQ_API_KEY?: string; DB?: Database } }>();
 
 async function translateMedicalText(
   text: string,
   sourceLang: string,
-  env: { SARVAM_API_KEY?: string; GEMINI_API_KEY?: string; GROQ_API_KEY?: string; COVEXCODE_ENDPOINT?: string; COVEXCODE_API_KEY?: string; COVEXCODE_MODEL?: string } = {}
+  env: { SARVAM_API_KEY?: string; GEMINI_API_KEY?: string; GROQ_API_KEY?: string; COVEXCODE_ENDPOINT?: string; COVEXCODE_API_KEY?: string; COVEXCODE_API_KEY_INTAKE?: string; COVEXCODE_MODEL?: string } = {}
 ): Promise<{ translation: string; source: string }> {
   const isTestEnv = Boolean(process.env.VITEST || process.env.NODE_ENV === "test");
 
-  // 1. Primary: Covexcode DeepSeek-V4 Clinical Scribe & Translator (Hack with Delhi 4.0 Sponsor Track)
-  const covexEndpoint = env?.COVEXCODE_ENDPOINT || process.env.COVEXCODE_ENDPOINT || "https://llm.covexcode.com/event/v1";
-  const covexApiKey = env?.COVEXCODE_API_KEY || process.env.COVEXCODE_API_KEY || "bx-live-4a8ec18ec6c885f28c0d72be6369a5be";
-  const covexModel = env?.COVEXCODE_MODEL || process.env.COVEXCODE_MODEL || "deepseek-v4-flash";
+  // 1. Primary: Covexcode DeepSeek-V4 Clinical Scribe & Translator (pinned to "intake" feature key)
+  const { endpoint: covexEndpoint, apiKey: covexApiKey, model: covexModel } = getCovexConfig(env, "intake");
 
   if (covexApiKey && !isTestEnv) {
     try {
@@ -390,10 +389,8 @@ intakeRouter.post("/chat", async (c) => {
     const summaryRes = await translateMedicalText(transcript, language, c.env);
     clinicalSummary = summaryRes.translation;
   } else {
-    // Primary: Covexcode DeepSeek-V4 Context-Aware Clinical Intake Assistant
-    const covexEndpoint = (c.env as any)?.COVEXCODE_ENDPOINT || process.env.COVEXCODE_ENDPOINT || "https://llm.covexcode.com/event/v1";
-    const covexApiKey = (c.env as any)?.COVEXCODE_API_KEY || process.env.COVEXCODE_API_KEY || "bx-live-4a8ec18ec6c885f28c0d72be6369a5be";
-    const covexModel = (c.env as any)?.COVEXCODE_MODEL || process.env.COVEXCODE_MODEL || "deepseek-v4-flash";
+    // Primary: Covexcode DeepSeek-V4 Context-Aware Clinical Intake Assistant (pinned to "intake" feature key)
+    const { endpoint: covexEndpoint, apiKey: covexApiKey, model: covexModel } = getCovexConfig(c, "intake");
 
     let usedCovex = false;
     if (covexApiKey && !isTestEnv) {
