@@ -51,10 +51,11 @@ export function getCovexConfig(envOrContext?: any, feature: CovexFeature = "copi
 
   const featureVar = FEATURE_ENV_KEYS[feature];
   const featureDefaults: Partial<Record<CovexFeature, string>> = {
-    intake: "bx-live-1926081e3c39235d71f8b0d6f647480e",    // Key #1: Divyansh
-    copilot: "bx-live-4a8ec18ec6c885f28c0d72be6369a5be",   // Key #2: Ruchir
-    rx_audit: "bx-live-22e73c726fe91d01637779a2e97f5e64",  // Key #3: Savi
-    emergency: "bx-live-c4c06b39d0568ecef7385ca33668cbb4", // Key #4: Charu
+    intake: "bx-live-1926081e3c39235d71f8b0d6f647480e",      // Key #1: Divyansh
+    copilot: "bx-live-4a8ec18ec6c885f28c0d72be6369a5be",     // Key #2: Ruchir
+    rx_audit: "bx-live-22e73c726fe91d01637779a2e97f5e64",    // Key #3: Savi
+    emergency: "bx-live-c4c06b39d0568ecef7385ca33668cbb4",   // Key #4: Charu
+    diagnostics: "bx-live-d0a1cf70f9f97514180cc2b26dee759d", // Key #5
   };
   const featureDefault = featureDefaults[feature] || "bx-live-4a8ec18ec6c885f28c0d72be6369a5be";
 

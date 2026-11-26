@@ -44,7 +44,7 @@ serve(
         COVEXCODE_API_KEY_INTAKE: process.env.COVEXCODE_API_KEY_INTAKE ?? "bx-live-1926081e3c39235d71f8b0d6f647480e",
         COVEXCODE_API_KEY_RX_AUDIT: process.env.COVEXCODE_API_KEY_RX_AUDIT ?? "bx-live-22e73c726fe91d01637779a2e97f5e64",
         COVEXCODE_API_KEY_EMERGENCY: process.env.COVEXCODE_API_KEY_EMERGENCY ?? "bx-live-c4c06b39d0568ecef7385ca33668cbb4",
-        COVEXCODE_API_KEY_DIAGNOSTICS: process.env.COVEXCODE_API_KEY_DIAGNOSTICS,
+        COVEXCODE_API_KEY_DIAGNOSTICS: process.env.COVEXCODE_API_KEY_DIAGNOSTICS ?? "bx-live-d0a1cf70f9f97514180cc2b26dee759d",
         COVEXCODE_API_KEY_HQ_ANALYTICS: process.env.COVEXCODE_API_KEY_HQ_ANALYTICS,
         COVEXCODE_MODEL: process.env.COVEXCODE_MODEL ?? "deepseek-v4-flash",
         ASSETS: { fetch: (req) => Promise.resolve(assets.fetch(req)) },
