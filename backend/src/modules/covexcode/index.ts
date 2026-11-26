@@ -95,10 +95,10 @@ covexRouter.post("/chat", async (c) => {
           },
           { role: "user", content: prompt }
         ],
-        max_tokens: 500,
+        max_tokens: 3000,
         temperature: 0.2
       }),
-      signal: AbortSignal.timeout(15000)
+      signal: AbortSignal.timeout(25000)
     });
 
     const elapsedMs = Date.now() - startTime;
@@ -106,7 +106,14 @@ covexRouter.post("/chat", async (c) => {
     if (res.ok) {
       const data = await res.json() as any;
       const choice = data.choices?.[0]?.message;
-      const text = choice?.content?.trim() || choice?.reasoning_content?.trim() || "Clinical assessment completed successfully.";
+      let text = choice?.content?.trim();
+      if (!text && choice?.reasoning_content) {
+        // Extract clean text if available
+        text = choice.reasoning_content.trim();
+      }
+      if (!text) {
+        text = "Clinical assessment completed successfully.";
+      }
       const reasoning = choice?.reasoning_content?.trim() || undefined;
       const tokensUsed = data.usage?.total_tokens || 85;
 

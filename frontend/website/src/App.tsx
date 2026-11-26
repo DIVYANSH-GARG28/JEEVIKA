@@ -79,7 +79,7 @@ import { authService } from '@/lib/authService'
 import { dataService } from '@/lib/dataService'
 
 // View types
-type View = 'selection' | 'staff' | 'admin' | 'inventory-dashboard' | 'setup' | 'hospitals' | 'audit_logs' | 'pos' | 'attendance' | 'earnings' | 'settings' | 'billing' | 'shift-management' | 'procurement' | 'medicine-migration' | 'expenses' | 'equipments' | 'ca-suite' | 'ipd' | 'doctor-consultation' | 'emergency-triage' | 'ayush-center' | 'patient-kiosk' | 'clinic-admin' | 'maritime-agents' | 'prune-gateway'
+type View = 'selection' | 'staff' | 'admin' | 'inventory-dashboard' | 'setup' | 'hospitals' | 'audit_logs' | 'pos' | 'attendance' | 'earnings' | 'settings' | 'billing' | 'shift-management' | 'procurement' | 'medicine-migration' | 'expenses' | 'equipments' | 'ca-suite' | 'ipd' | 'doctor-consultation' | 'emergency-triage' | 'opd-queue' | 'ayush-center' | 'patient-kiosk' | 'clinic-admin' | 'maritime-agents' | 'prune-gateway'
 
 type SeoConfig = {
     title: string
@@ -179,7 +179,13 @@ function AppContent() {
 
     // Check query parameter e.g. /app?view=doctor-consultation
     const queryParams = new URLSearchParams(location.search);
-    const viewParam = queryParams.get('view') as View | null;
+    const normalizeView = (v: string | null): View | null => {
+        if (!v) return null;
+        if (v === 'opd-queue' || v === 'queue') return 'emergency-triage';
+        if (v === 'kiosk') return 'patient-kiosk';
+        return v as View;
+    };
+    const viewParam = normalizeView(queryParams.get('view'));
 
     const [view, setView] = useState<View>(() => {
         if (viewParam) return viewParam;
@@ -221,7 +227,7 @@ function AppContent() {
             // This prevents losing the user's position when the component remounts
             // (e.g. tab switch, minimize, auth state re-trigger).
 
-            const clinicalViews: View[] = ['doctor-consultation', 'emergency-triage', 'ayush-center', 'patient-kiosk', 'clinic-admin', 'maritime-agents', 'prune-gateway'];
+            const clinicalViews: View[] = ['doctor-consultation', 'emergency-triage', 'opd-queue', 'ayush-center', 'patient-kiosk', 'clinic-admin', 'maritime-agents', 'prune-gateway'];
 
             // 1. CRITICAL: Clinic Admin Bypass (Gatekeeper Fix)
             // Allow entry even if clinic_id is null (The Dashboard will handle the "No Clinic" state)
@@ -528,7 +534,7 @@ function AppContent() {
                         />
                     )}
 
-                    {view === 'emergency-triage' && (
+                    {(view === 'emergency-triage' || (view as string) === 'opd-queue') && (
                         <EmergencyTriage 
                             onAdmitToIpd={() => guardedSetView('ipd')}
                         />

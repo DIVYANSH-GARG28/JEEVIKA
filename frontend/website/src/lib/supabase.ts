@@ -4,7 +4,9 @@ const defaultApiUrl = isPagesDev
   ? 'https://jeevika-api.workers.dev/api/v1'
   : '/api/v1';
 
-export const CLOUDFLARE_API_BASE = (import.meta.env.VITE_API_URL || defaultApiUrl).replace(/\/$/, '');
+const rawEnvUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const safeApiUrl = (!rawEnvUrl || rawEnvUrl.includes('dhaaga-backend.workers.dev')) ? defaultApiUrl : rawEnvUrl;
+export const CLOUDFLARE_API_BASE = safeApiUrl.replace(/\/$/, '');
 
 export interface CloudflareResponse<T = any> {
   data: T | null;

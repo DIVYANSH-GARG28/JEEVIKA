@@ -49,7 +49,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-const API_BASE = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/$/, '');
+const rawApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const API_BASE = (!rawApiUrl || rawApiUrl.includes('dhaaga-backend.workers.dev') ? '/api/v1' : rawApiUrl).replace(/\/$/, '');
 
 interface HospitalDashboardProps {
     onSelectClinic: (id: string) => void;
@@ -845,9 +846,9 @@ export function HospitalDashboard({ onSelectClinic }: HospitalDashboardProps) {
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-                    <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-slate-400 bg-slate-950/60 px-3 py-1.5 rounded-xl border border-slate-800">
-                        <Lock className="w-3 h-3 text-slate-500" />
-                        <span className="truncate max-w-[140px]">{auditData.latestHash.slice(0, 16)}...</span>
+                    <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-slate-200 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-xs">
+                        <Lock className="w-3 h-3 text-emerald-400" />
+                        <span className="truncate max-w-[140px] text-slate-200">{auditData.latestHash.slice(0, 16)}...</span>
                         <button
                             onClick={() => copyToClipboard(auditData.latestHash)}
                             className="text-slate-400 hover:text-white transition-colors ml-1"
@@ -873,7 +874,7 @@ export function HospitalDashboard({ onSelectClinic }: HospitalDashboardProps) {
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-xs bg-slate-800/60 border-slate-700 text-slate-200 hover:bg-slate-700 h-8 px-3 rounded-lg"
+                                className="text-xs bg-slate-800 border-slate-600 text-slate-100 hover:text-white hover:bg-slate-700 h-8 px-3 rounded-lg font-medium shadow-xs"
                             >
                                 Inspector
                             </Button>
@@ -2142,11 +2143,13 @@ export function HospitalDashboard({ onSelectClinic }: HospitalDashboardProps) {
                                         <div className="flex items-center gap-2">
                                             <p className="font-bold text-slate-900 text-sm">{item.item_name}</p>
                                             <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 text-[10px] font-mono">
-                                                {item.total_quantity} left
+                                                {item.units_per_pack && item.units_per_pack > 1 
+                                                    ? `${Math.floor(item.total_quantity / item.units_per_pack)} pk (${item.total_quantity}u)` 
+                                                    : `${item.total_quantity} left`}
                                             </Badge>
                                         </div>
                                         <p className="text-xs text-slate-500 mt-0.5">
-                                            Depleted Hub: <strong className="text-slate-800">{item.deficitClinicName}</strong> · Min Threshold: {item.threshold || 10}
+                                            Depleted Hub: <strong className="text-slate-800">{item.deficitClinicName}</strong> · Min Threshold: {item.threshold || 10} packs
                                         </p>
                                         {item.surplusClinicName ? (
                                             <p className="text-[11px] text-emerald-700 font-medium flex items-center gap-1 mt-1">

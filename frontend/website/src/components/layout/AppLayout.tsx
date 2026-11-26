@@ -78,11 +78,11 @@ export function AppLayout({
                 dotClass: 'bg-teal-500'
             };
         }
-        if (view === 'emergency-triage') {
+        if (view === 'emergency-triage' || view === 'opd-queue') {
             return {
                 number: '03',
-                name: 'Emergency Triage (STAT)',
-                badge: 'PORTAL 3 · EMERGENCY DEPARTMENT',
+                name: 'Emergency Triage & OPD Queue (STAT)',
+                badge: 'PORTAL 3 · EMERGENCY & OPD TRIAGE',
                 badgeClass: 'bg-rose-50 text-rose-800 border-rose-200',
                 dotClass: 'bg-rose-500 animate-ping'
             };
@@ -430,48 +430,48 @@ export function AppLayout({
             )}
 
             {/* MAIN CONTENT AREA */}
-            <main className="flex-1 min-w-0 overflow-y-auto bg-white flex flex-col relative w-full">
+            <main className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden bg-white flex flex-col relative w-full">
 
                 {/* HEADER */}
                 {view !== 'patient-kiosk' && (
-                <header className="h-20 border-b border-slate-100 flex items-center justify-between px-4 lg:px-8 sticky top-0 bg-white/95 backdrop-blur-md z-30 shrink-0">
-                    <div className="flex items-center gap-4">
+                <header className="min-h-[4.75rem] py-3 border-b border-slate-100 flex items-center justify-between gap-3 px-4 lg:px-8 sticky top-0 bg-white/95 backdrop-blur-md z-30 shrink-0">
+                    <div className="flex items-center gap-3 min-w-0">
                         {!isFullBleedPortal && (
-                            <button className="lg:hidden p-2.5 -ml-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all flex items-center justify-center" onClick={() => setIsMobileMenuOpen(true)}>
+                            <button className="lg:hidden p-2 -ml-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all flex items-center justify-center shrink-0" onClick={() => setIsMobileMenuOpen(true)}>
                                 <SymbolIcon className="material-symbols-outlined text-[24px]">menu</SymbolIcon>
                             </button>
                         )}
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${portalMeta.badgeClass}`}>
+                        <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-2 mb-1.5 pt-0.5">
+                                <span className={`text-[10px] font-mono uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full border shrink-0 ${portalMeta.badgeClass}`}>
                                     {portalMeta.badge}
                                 </span>
                             </div>
-                            <h1 className="text-xl font-bold text-slate-900 tracking-tight capitalize leading-none">
+                            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate max-w-[220px] sm:max-w-xs md:max-w-md lg:max-w-xl leading-snug">
                                 {portalMeta.name}
                             </h1>
                         </div>
                     </div>
 
                     {/* DEDICATED EXIT TO PORTALS BUTTON - STITCH MINIMAL TASTE */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                         <button
                             type="button"
                             onClick={() => setView('maritime-agents')}
-                            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${view === 'maritime-agents' ? 'bg-blue-600 text-white border-blue-600' : 'bg-blue-50/80 hover:bg-blue-100 text-blue-700 border-blue-200/80'}`}
+                            className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${view === 'maritime-agents' ? 'bg-blue-600 text-white border-blue-600' : 'bg-blue-50/80 hover:bg-blue-100 text-blue-700 border-blue-200/80'}`}
                             title="Maritime Autonomous Clinical Agent Mesh (VIHAAN-X Special Challenge)"
                         >
                             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                            <span>🌊 Maritime Agents</span>
+                            <span>🌊 Maritime</span>
                         </button>
                         <button
                             type="button"
                             onClick={() => setView('prune-gateway')}
-                            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${view === 'prune-gateway' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50/80 hover:bg-emerald-100 text-emerald-700 border-emerald-200/80'}`}
+                            className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${view === 'prune-gateway' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50/80 hover:bg-emerald-100 text-emerald-700 border-emerald-200/80'}`}
                             title="Prune AI Cost Optimization & Security Gateway (VIHAAN-X Special Challenge)"
                         >
                             <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                            <span>🛡️ Prune Gateway</span>
+                            <span>🛡️ Prune</span>
                         </button>
                         <button
                             type="button"
@@ -480,11 +480,11 @@ export function AppLayout({
                                 onSelectClinicId?.(null);
                                 navigate('/');
                             }}
-                            className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-950 text-xs font-semibold tracking-tight shadow-sm transition-all duration-150 cursor-pointer active:scale-95"
+                            className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-950 text-xs font-semibold tracking-tight shadow-sm transition-all duration-150 cursor-pointer active:scale-95"
                             title="Return to Portal Selection (Choose a different dashboard)"
                         >
                             <SymbolIcon className="material-symbols-outlined text-[16px] text-slate-400 group-hover:text-slate-700 group-hover:-translate-x-0.5 transition-all">arrow_back</SymbolIcon>
-                            <span>Exit to Portals</span>
+                            <span>Exit</span>
                         </button>
                     </div>
 
@@ -558,7 +558,7 @@ export function AppLayout({
                 )}
 
                 {/* SCROLLABLE INNER CONTENT */}
-                <div id="tour-workspace-content" className={view === 'patient-kiosk' ? "flex-1 w-full" : "flex-1 p-4 lg:p-12 lg:pt-6 max-w-[1600px] w-full mx-auto"}>
+                <div id="tour-workspace-content" className={view === 'patient-kiosk' ? "flex-1 w-full overflow-x-hidden" : "flex-1 p-3 sm:p-4 lg:p-12 lg:pt-6 max-w-[1600px] w-full mx-auto overflow-x-hidden"}>
                     {showGuideInvitation && !isTourActive && <section className="ayu-guide-invitation" aria-label="Workspace introduction"><div><strong>New to this workspace?</strong><p>Take a short guide without leaving this page.</p></div><button type="button" onClick={showGuide}>Show me around</button><button type="button" onClick={dismissGuideInvitation}>Not now</button></section>}
                     {children}
                 </div>
