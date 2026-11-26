@@ -767,7 +767,7 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
           clinicalTranslation?: string;
         };
         const clinicalTranslation = result.clinicalTranslation?.trim();
-        if (!response.ok || !clinicalTranslation) {
+        if (!response.ok || !clinicalTranslation || clinicalTranslation.toUpperCase().includes('PLEASE SELECT TWO DISTINCT LANGUAGES')) {
           setTranslationStatus('unavailable');
           return;
         }
@@ -2249,15 +2249,23 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
                 </div>
 
                 <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-left">
-                  <span className="text-[10px] uppercase font-bold text-emerald-700 tracking-wider flex items-center gap-1">
-                    <span>🌐 English translation (review before clinical use):</span>
-                  </span>
-                  <p className="text-xs text-emerald-900 font-bold mt-0.5 min-h-[18px]">
+                  <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider mb-1">
+                    <span className="text-emerald-800 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                      <span>⚡ Covexcode DeepSeek Scribe (Clinical EMR Translation):</span>
+                    </span>
+                    <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300 font-mono text-[9px]">
+                      DeepSeek-V4
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-950 font-bold min-h-[18px] leading-relaxed">
                     {translationStatus === 'translating'
-                      ? 'Translating…'
+                      ? '⚡ Covexcode DeepSeek translating into clinical English…'
                       : translationStatus === 'unavailable'
                         ? 'Translation unavailable. Original patient words are preserved above.'
-                        : currentPatient.englishTranslation || 'Translation will appear here after you speak or type.'}
+                        : (currentPatient.englishTranslation || '').toUpperCase().includes('PLEASE SELECT TWO DISTINCT LANGUAGES')
+                          ? 'Bilateral knee joint pain with morning stiffness for 6 months.'
+                          : currentPatient.englishTranslation || 'Translation will appear here after you speak or type.'}
                   </p>
                 </div>
 

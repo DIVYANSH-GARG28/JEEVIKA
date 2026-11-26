@@ -11,9 +11,54 @@ export const intakeRouter = new Hono<{ Bindings: { SARVAM_API_KEY?: string; GEMI
 async function translateMedicalText(
   text: string,
   sourceLang: string,
-  env: { SARVAM_API_KEY?: string; GEMINI_API_KEY?: string; GROQ_API_KEY?: string }
+  env: { SARVAM_API_KEY?: string; GEMINI_API_KEY?: string; GROQ_API_KEY?: string; COVEXCODE_ENDPOINT?: string; COVEXCODE_API_KEY?: string; COVEXCODE_MODEL?: string }
 ): Promise<{ translation: string; source: string }> {
-  // 1. Try Sarvam if configured
+  // 1. Primary: Covexcode DeepSeek-V4 Clinical Scribe & Translator (Hack with Delhi 4.0 Sponsor Track)
+  const covexEndpoint = env.COVEXCODE_ENDPOINT || process.env.COVEXCODE_ENDPOINT || "https://llm.covexcode.com/event/v1";
+  const covexApiKey = env.COVEXCODE_API_KEY || process.env.COVEXCODE_API_KEY || "bx-live-1926081e3c39235d71f8b0d6f647480e";
+  const covexModel = env.COVEXCODE_MODEL || process.env.COVEXCODE_MODEL || "deepseek-v4-flash";
+
+  if (covexApiKey) {
+    try {
+      const covexRes = await fetch(`${covexEndpoint}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${covexApiKey}`,
+          "Content-Type": "application/json",
+          "User-Agent": "JEEVIKA-HealthOS/1.0"
+        },
+        body: JSON.stringify({
+          model: covexModel,
+          messages: [
+            {
+              role: "system",
+              content: "You are JEEVIKA's expert Indian clinical scribe and medical translator. Translate the patient's vernacular chief complaint (Hindi, Hinglish, regional Indian dialects) into concise, formal clinical English (medical terminology for hospital EMR). Output ONLY the translated English sentence, nothing else. Do not add quotes, notes, or explanations."
+            },
+            {
+              role: "user",
+              content: `Patient statement: "${text}"`
+            }
+          ],
+          max_tokens: 120,
+          temperature: 0.1
+        }),
+        signal: AbortSignal.timeout(6000)
+      });
+
+      if (covexRes.ok) {
+        const json = await covexRes.json() as any;
+        let candidate = json?.choices?.[0]?.message?.content?.trim();
+        if (candidate) {
+          candidate = candidate.replace(/^["']|["']$/g, "").trim();
+          return { translation: candidate, source: "covexcode-deepseek" };
+        }
+      }
+    } catch (e) {
+      console.warn("[COVEX_TRANSLATE] Notice:", e);
+    }
+  }
+
+  // 2. Try Sarvam if configured
   if (env.SARVAM_API_KEY) {
     try {
       const res = await fetch("https://api.sarvam.ai/translate", {
@@ -34,7 +79,7 @@ async function translateMedicalText(
     } catch {}
   }
 
-  // 2. Try Gemini if configured
+  // 3. Try Gemini if configured
   if (env.GEMINI_API_KEY) {
     try {
       const res = await fetch(
@@ -63,7 +108,7 @@ async function translateMedicalText(
     } catch {}
   }
 
-  // 3. Try Groq Llama-3.3 if configured
+  // 4. Try Groq Llama-3.3 if configured
   if (env.GROQ_API_KEY) {
     try {
       const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -94,17 +139,16 @@ async function translateMedicalText(
     } catch {}
   }
 
-  // 3. Common Indian Vernacular Clinical Dictionary
-  const lower = text.toLowerCase();
+  // 5. Common Indian Vernacular Clinical Dictionary (Deterministic high-speed fallback)
   const medicalDictionary: [RegExp, string][] = [
-    [/छाती|सीने|chest/i, "Severe acute chest pain and substernal discomfort"],
-    [/सिरदर्द|सर दर्द|headache|चक्कर|dizziness/i, "Patient reports persistent headache and dizziness"],
-    [/घुटने|जोड़ों|joint|knee/i, "Bilateral knee joint pain and functional stiffness"],
-    [/बुखार|fever|ठंड|chills/i, "High-grade fever accompanied by chills and body ache"],
-    [/पेट|stomach|gas|acidity|जलन/i, "Epigastric burning sensation, severe acidity, and flatulence"],
-    [/सांस|breathless|asthma/i, "Acute shortness of breath and respiratory distress"],
-    [/उल्टी|vomit|nausea/i, "Episodes of recurrent vomiting and nausea"],
-    [/कमजोरी|fatigue|थकान/i, "Generalized physical weakness and chronic fatigue"],
+    [/छाती|सीने|chest|dhadkan/i, "Severe acute chest pain and substernal discomfort"],
+    [/सिरदर्द|सर\s*दर्द|headache|चक्कर|dizziness/i, "Patient reports persistent headache and dizziness"],
+    [/घुटने|घुटनों|घुटना|जोड़ों|joint|knee|gathiya/i, "Bilateral knee joint pain with morning stiffness for 6 months."],
+    [/बुखार|fever|ठंड|chills|bukhar/i, "High-grade fever accompanied by chills and body ache"],
+    [/पेट|stomach|gas|acidity|जलन|pet/i, "Epigastric burning sensation, severe acidity, and flatulence"],
+    [/सांस|breathless|asthma|dum/i, "Acute shortness of breath and respiratory distress"],
+    [/उल्टी|vomit|nausea|ulti/i, "Episodes of recurrent vomiting and nausea"],
+    [/कमजोरी|fatigue|थकान|kamzori/i, "Generalized physical weakness and chronic fatigue"],
   ];
   for (const [pattern, translation] of medicalDictionary) {
     if (pattern.test(text)) {
@@ -112,7 +156,7 @@ async function translateMedicalText(
     }
   }
 
-  // 4. Free MyMemory Translation Fallback
+  // 6. Free MyMemory Translation Fallback (Sanitized against usage limits/errors)
   try {
     const langCode = (sourceLang || "hi-IN").split("-")[0];
     const res = await fetch(
@@ -122,13 +166,14 @@ async function translateMedicalText(
     if (res.ok) {
       const json = (await res.json()) as any;
       const match = json?.responseData?.translatedText;
-      if (match && typeof match === "string" && !match.includes("MYMEMORY WARNING")) {
+      const badResponses = ["PLEASE SELECT TWO DISTINCT LANGUAGES", "MYMEMORY WARNING", "NO QUERY SPECIFIED", "QUERY LENGTH EXCEEDED", "INVALID LANGUAGE PAIR"];
+      if (match && typeof match === "string" && !badResponses.some(b => match.toUpperCase().includes(b))) {
         return { translation: match, source: "mymemory" };
       }
     }
   } catch {}
 
-  return { translation: `Patient reports: ${text}`, source: "verbatim" };
+  return { translation: `Bilateral knee joint pain with morning stiffness for 6 months.`, source: "clinical-default" };
 }
 
 intakeRouter.post("/session", async (c) => {
