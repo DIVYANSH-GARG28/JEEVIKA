@@ -55,8 +55,8 @@ export function AppLayout({
             return {
                 number: '05',
                 name: 'Maritime Autonomous Agent Mesh (Scale Tier)',
-                badge: 'SPECIAL TRACK · MARITIME CLOUD AGENTS',
-                shortBadge: 'MARITIME',
+                badge: 'PORTAL 06 · MARITIME AGENT MESH',
+                shortBadge: 'PORTAL 06 · AGENTS',
                 badgeClass: 'bg-blue-50 text-blue-800 border-blue-300',
                 dotClass: 'bg-blue-600'
             };
@@ -65,8 +65,8 @@ export function AppLayout({
             return {
                 number: '06',
                 name: 'Prune AI Cost Engine & Security Gateway',
-                badge: 'SPECIAL TRACK · PRUNE PRO AI GATEWAY',
-                shortBadge: 'PRUNE AI',
+                badge: 'PORTAL 07 · PRUNE AI GATEWAY',
+                shortBadge: 'PORTAL 07 · PRUNE',
                 badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-300',
                 dotClass: 'bg-emerald-600'
             };
@@ -466,7 +466,7 @@ export function AppLayout({
                             type="button"
                             onClick={() => setView('maritime-agents')}
                             className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${view === 'maritime-agents' ? 'bg-blue-600 text-white border-blue-600' : 'bg-blue-50/80 hover:bg-blue-100 text-blue-700 border-blue-200/80'}`}
-                            title="Maritime Autonomous Clinical Agent Mesh (VIHAAN-X Special Challenge)"
+                            title="Maritime Autonomous Clinical Agent Mesh"
                         >
                             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
                             <span>🌊 Maritime</span>
@@ -475,7 +475,7 @@ export function AppLayout({
                             type="button"
                             onClick={() => setView('prune-gateway')}
                             className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${view === 'prune-gateway' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50/80 hover:bg-emerald-100 text-emerald-700 border-emerald-200/80'}`}
-                            title="Prune AI Cost Optimization & Security Gateway (VIHAAN-X Special Challenge)"
+                            title="Prune AI Cost Optimization & Security Gateway"
                         >
                             <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
                             <span>🛡️ Prune</span>

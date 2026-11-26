@@ -1221,7 +1221,7 @@ export function DoctorConsultation({ onSendToPos, onAdmitToIpd }: DoctorConsulta
       console.warn('Maritime mesh call fallback:', err);
       setMaritimeResult({
         success: true,
-        cluster: 'maritime-cloud-scale-vihaanx',
+        cluster: 'maritime-cloud-scale-primary',
         tier: 'Scale Tier (10,000 req/min)',
         latencyMs: 138,
         swarmSummary: {
@@ -1919,7 +1919,7 @@ export function DoctorConsultation({ onSendToPos, onAdmitToIpd }: DoctorConsulta
     doc.setFont('courier', 'bold');
     doc.setFontSize(7);
     doc.setTextColor(2, 132, 199);
-    doc.text('🌊 Maritime Cloud Swarm Audited (VIHAANX Scale) • 🛡️ Prune Pro AI Gateway Protected (0 PII Leaks)', 14, footerY + 17);
+    doc.text('🌊 Maritime Cloud Swarm Audited • 🛡️ Prune Pro AI Gateway Protected (0 PII Leaks)', 14, footerY + 17);
     doc.setFont('courier', 'normal');
     doc.setTextColor(100, 116, 139);
     doc.text(`NRCeS-SIGN-HASH: ${activePatient.patientId.toUpperCase()}-${Date.now().toString(16).toUpperCase()}`, 14, footerY + 21);
@@ -2980,7 +2980,7 @@ export function DoctorConsultation({ onSendToPos, onAdmitToIpd }: DoctorConsulta
                             🌊 Maritime Cloud Autonomous Clinical Swarm
                           </h4>
                           <span className="text-[10px] bg-purple-950 text-purple-300 font-mono px-2 py-0.5 rounded border border-purple-800">
-                            Scale Plan (VIHAANX)
+                            Enterprise Multi-Agent Plan
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-300 font-sans">
