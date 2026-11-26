@@ -71,6 +71,15 @@ covexRouter.get("/status", async (c) => {
   });
 });
 
+// GET /api/v1/covex/telemetry
+covexRouter.get("/telemetry", async (c) => {
+  return c.json({
+    success: true,
+    count: recentCovexLogs.length,
+    logs: recentCovexLogs
+  });
+});
+
 // POST /api/v1/covex/chat
 covexRouter.post("/chat", async (c) => {
   const { endpoint, apiKey, model } = getCovexConfig(c);
@@ -91,11 +100,11 @@ covexRouter.post("/chat", async (c) => {
         messages: [
           {
             role: "system",
-            content: "You are JEEVIKA's Clinical AI Assistant, specialized in Indian healthcare (Ayushman Bharat, PMBJP Jan Aushadhi generic substitutions, and NMC RMP standards). Provide concise, evidence-based clinical assessments with generic prescription mapping."
+            content: "You are JEEVIKA's Clinical AI Assistant, specialized in Indian healthcare (Ayushman Bharat, PMBJP Jan Aushadhi generic substitutions, and NMC RMP standards). Provide concise, direct, evidence-based clinical assessments with differential diagnosis, red flags, and PMBJP generic drug substitutions. Be concise and prioritize the final clinical protocol."
           },
           { role: "user", content: prompt }
         ],
-        max_tokens: 3000,
+        max_tokens: 4096,
         temperature: 0.2
       }),
       signal: AbortSignal.timeout(25000)

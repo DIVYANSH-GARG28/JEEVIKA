@@ -51,6 +51,16 @@ export function AppLayout({
                 dotClass: 'bg-amber-500'
             };
         }
+        if (view === 'covexcode') {
+            return {
+                number: '08',
+                name: 'Covexcode DeepSeek-V4 Clinical Copilot',
+                badge: 'SPONSOR TRACK · COVEXCODE DEEPSEEK-V4',
+                shortBadge: '⚡ COVEXCODE',
+                badgeClass: 'bg-amber-50 text-amber-900 border-amber-300',
+                dotClass: 'bg-amber-500 animate-pulse'
+            };
+        }
         if (view === 'maritime-agents') {
             return {
                 number: '05',
@@ -311,6 +321,13 @@ export function AppLayout({
                                 active={(view as string) === 'billing'}
                                 onClick={() => setView('billing')}
                             />
+                            <NavItem
+                                id="tour-covexcode"
+                                icon="bolt"
+                                label="⚡ Covexcode Clinical AI"
+                                active={(view as string) === 'covexcode'}
+                                onClick={() => setView('covexcode')}
+                            />
                         </>
                     )}
 
@@ -374,6 +391,12 @@ export function AppLayout({
                                 label="Earnings & Ledger"
                                 active={(view as string) === 'earnings'}
                                 onClick={() => setView('earnings')}
+                            />
+                            <NavItem
+                                icon="bolt"
+                                label="⚡ Covexcode Clinical AI"
+                                active={(view as string) === 'covexcode'}
+                                onClick={() => setView('covexcode')}
                             />
                         </>
                     )}
@@ -460,11 +483,30 @@ export function AppLayout({
                         </div>
                     </div>
 
-                    {/* RIGHT CONTROLS: MARITIME / PRUNE / GUIDE / EXIT / NOTIFICATIONS / USER */}
+                    {/* RIGHT CONTROLS: COVEXCODE / MARITIME / PRUNE / GUIDE / EXIT / NOTIFICATIONS / USER */}
                     <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                         <button
                             type="button"
-                            onClick={() => setView('maritime-agents')}
+                            onClick={() => {
+                                setView('covexcode');
+                                navigate('/app?view=covexcode');
+                            }}
+                            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${
+                                view === 'covexcode'
+                                    ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md ring-2 ring-amber-400/50 font-black'
+                                    : 'bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-amber-950 border-amber-300 shadow-2xs'
+                            }`}
+                            title="⚡ Covexcode DeepSeek-V4 Clinical Copilot (Headline Hackathon Sponsor Track)"
+                        >
+                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                            <span>⚡ Covexcode</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setView('maritime-agents');
+                                navigate('/app?view=maritime-agents');
+                            }}
                             className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${view === 'maritime-agents' ? 'bg-blue-600 text-white border-blue-600' : 'bg-blue-50/80 hover:bg-blue-100 text-blue-700 border-blue-200/80'}`}
                             title="Maritime Autonomous Clinical Agent Mesh"
                         >
@@ -473,7 +515,10 @@ export function AppLayout({
                         </button>
                         <button
                             type="button"
-                            onClick={() => setView('prune-gateway')}
+                            onClick={() => {
+                                setView('prune-gateway');
+                                navigate('/app?view=prune-gateway');
+                            }}
                             className={`hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${view === 'prune-gateway' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-emerald-50/80 hover:bg-emerald-100 text-emerald-700 border-emerald-200/80'}`}
                             title="Prune AI Cost Optimization & Security Gateway"
                         >
