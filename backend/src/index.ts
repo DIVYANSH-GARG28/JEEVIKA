@@ -17,6 +17,7 @@ import { cbcRouter } from "./modules/cbc/routes";
 import { pruneCbcSources } from "./modules/cbc/maintenance";
 import { maritimeRouter } from "./modules/maritime";
 import { pruneRouter } from "./modules/prune";
+import { covexRouter } from "./modules/covexcode";
 import { createApp } from "../../apps/api/app";
 
 import {
@@ -1676,6 +1677,7 @@ v1.route("/auth/patient", patientAuthRouter);
 v1.route("/patient", patientProfileRouter);
 v1.route("/maritime", maritimeRouter);
 v1.route("/prune", pruneRouter);
+v1.route("/covex", covexRouter);
 
 // Deterministic algorithm evaluation endpoint
 v1.post("/algorithms/:name", async (c) => {

@@ -60,3 +60,11 @@ google-services.json
 GoogleService-Info.plist
 **/local.properties
 
+# Demo Recordings & Large Media
+*.webm
+*.mp4
+*.mp3
+recordings/
+recordings_human/
+
+
