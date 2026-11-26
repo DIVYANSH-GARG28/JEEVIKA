@@ -14,14 +14,16 @@ export function WebsiteLocalizationRuntime() {
 
 export function WebsiteLanguageSelect() {
   const [locale, setLocale] = useState<WebsiteLocale>(() => getWebsiteLocale());
-  const [isKiosk, setIsKiosk] = useState(() => {
+  const [shouldHide, setShouldHide] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return window.location.hash.includes('kiosk') || window.location.pathname.includes('kiosk');
+    const path = (window.location.hash || window.location.pathname).toLowerCase();
+    return path.includes('kiosk') || path.includes('/app') || path.includes('portal');
   });
 
   useEffect(() => {
     const handleLocation = () => {
-      setIsKiosk(window.location.hash.includes('kiosk') || window.location.pathname.includes('kiosk'));
+      const path = (window.location.hash || window.location.pathname).toLowerCase();
+      setShouldHide(path.includes('kiosk') || path.includes('/app') || path.includes('portal'));
     };
     window.addEventListener('hashchange', handleLocation);
     window.addEventListener('popstate', handleLocation);
@@ -37,10 +39,10 @@ export function WebsiteLanguageSelect() {
     return () => document.removeEventListener("jeevika:locale-change", update);
   }, []);
 
-  if (isKiosk) return null;
+  if (shouldHide) return null;
 
   return (
-    <label className="fixed bottom-3 right-3 z-30 flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 hover:bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-md backdrop-blur transition-all">
+    <label className="fixed bottom-3 right-3 z-30 hidden sm:flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white/90 hover:bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-md backdrop-blur transition-all">
       <span className="text-slate-400 text-xs">🌐</span>
       <span className="sr-only">Language</span>
       <select

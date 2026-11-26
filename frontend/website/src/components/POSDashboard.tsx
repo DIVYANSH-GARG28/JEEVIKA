@@ -53,6 +53,7 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
     const [searchQuery, setSearchQuery] = useState('');
     const [pharmacyDiscountPercent, setPharmacyDiscountPercent] = useState('');
     const [pharmacyDiscountedTotal, setPharmacyDiscountedTotal] = useState('');
+    const [mobilePosTab, setMobilePosTab] = useState<'items' | 'cart'>('items');
 
     // Qty Prompt State
     const [promptItem, setPromptItem] = useState<any>(null);
@@ -194,12 +195,19 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
         setPatientName(rx.patient_name || rx.patientId || '');
         if (rx.patient_phone) setPatientPhone(rx.patient_phone);
         if (rx.doctor_name) setDoctorName(rx.doctor_name);
-        setActiveRxId(rx.id);
+        const rawRxId = rx.id || rx._id || rx.prescriptionId || (rx.patientId ? `RX-${rx.patientId.slice(-6)}` : `RX-${Date.now().toString(16).slice(-6)}`);
+        const rxId = String(rawRxId).replace(/^#+/, '');
+        setActiveRxId(rxId);
         setActiveEncounterId(rx.encounter_id || rx.encounterId || null);
 
         const items = Array.isArray(rx.items) ? rx.items : (typeof rx.items_json === 'string' ? JSON.parse(rx.items_json || '[]') : []);
         if (!items || items.length === 0) {
-            toast({ title: 'Prescription Selected', description: `Linked Rx #${rx.id?.slice(0, 8)} for ${rx.patient_name || 'Patient'}.` });
+            setMobilePosTab('cart');
+            toast({
+                title: 'Prescription Selected',
+                description: `Linked Rx #${rxId.slice(0, 8)} for ${rx.patient_name || 'Patient'}. Add medications below.`,
+                className: 'bg-indigo-50 border-indigo-200 text-indigo-900'
+            });
             return;
         }
 
@@ -247,6 +255,7 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
         }
 
         setCart(newCartItems);
+        setMobilePosTab('cart');
         toast({
             title: 'Prescription Loaded',
             description: `Loaded ${newCartItems.length} items for ${rx.patient_name || 'Patient'} into cart.`,
@@ -713,6 +722,7 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
             setCart([]); setPatientName(''); setPatientAddress(''); setDoctorName(''); setPharmacyDiscountPercent(''); setPharmacyDiscountedTotal('');
             setActiveRxId(null);
             setActiveEncounterId(null);
+            setMobilePosTab('items');
             fetchPendingPrescriptions();
 
         } catch (error: any) {
@@ -883,7 +893,7 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                 </aside>
 
                 {/* MIDDLE SECTION - CONTENT */}
-                <section className="flex-1 flex flex-col min-w-0 bg-[#f8fafc] overflow-y-auto lg:overflow-hidden">
+                <section className={`flex-1 flex flex-col min-w-0 bg-[#f8fafc] overflow-y-auto lg:overflow-hidden ${view === 'pharmacy' && mobilePosTab === 'cart' ? 'hidden lg:flex' : 'flex'}`}>
 
                     {/* PHARMACY VIEW (Grid) */}
                     {view === 'pharmacy' && (
@@ -891,29 +901,29 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                             {/* PENDING PRESCRIPTION DISPENSING QUEUE */}
                             <div className="p-3 sm:p-6 pb-0">
                                 <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
-                                                <SymbolIcon className="material-symbols-outlined text-[20px]">prescriptions</SymbolIcon>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shrink-0">
+                                                <SymbolIcon className="material-symbols-outlined text-[18px] sm:text-[20px]">prescriptions</SymbolIcon>
                                             </div>
-                                            <div>
-                                                <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                                    Pending Prescriptions Queue
-                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
+                                            <div className="min-w-0">
+                                                <h3 className="font-bold text-slate-900 text-xs sm:text-sm flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                                    <span>Pending Prescriptions</span>
+                                                    <span className="px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-indigo-100 text-indigo-700 shrink-0">
                                                         {pendingPrescriptions.length} Ready
                                                     </span>
                                                 </h3>
-                                                <p className="text-[11px] text-slate-500">Live doctor signed orders waiting for pharmacy fulfillment</p>
+                                                <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">Live doctor orders for fulfillment</p>
                                             </div>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={fetchPendingPrescriptions}
                                             disabled={isLoadingRx}
-                                            className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1.5 bg-indigo-50/60 hover:bg-indigo-100/60 px-3 py-1.5 rounded-lg transition-colors border border-indigo-100"
+                                            className="text-[11px] sm:text-xs font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50/60 hover:bg-indigo-100/60 px-2.5 py-1 rounded-lg transition-colors border border-indigo-100 shrink-0 self-start sm:self-auto cursor-pointer"
                                         >
-                                            <SymbolIcon className={`material-symbols-outlined text-[16px] ${isLoadingRx ? 'animate-spin' : ''}`}>sync</SymbolIcon>
-                                            Refresh Queue
+                                            <SymbolIcon className={`material-symbols-outlined text-[15px] ${isLoadingRx ? 'animate-spin' : ''}`}>sync</SymbolIcon>
+                                            <span>Refresh</span>
                                         </button>
                                     </div>
 
@@ -923,12 +933,13 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                                         </div>
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-                                            {pendingPrescriptions.map((rx: any) => {
+                                            {pendingPrescriptions.map((rx: any, rxIdx: number) => {
                                                 const isLoaded = activeRxId === rx.id;
+                                                const rxKey = rx.id || rx._id || `rx-queue-${rxIdx}`;
                                                 const items = Array.isArray(rx.items) ? rx.items : (typeof rx.items_json === 'string' ? JSON.parse(rx.items_json || '[]') : []);
                                                 return (
                                                     <div
-                                                        key={rx.id}
+                                                        key={rxKey}
                                                         className={`p-3 rounded-xl border transition-all ${
                                                             isLoaded
                                                                 ? 'bg-indigo-50/80 border-indigo-300 shadow-sm ring-1 ring-indigo-200'
@@ -1027,6 +1038,26 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                                     )}
                                 </div>
                             </div>
+
+                            {/* MOBILE FLOATING BILL SUMMARY BAR */}
+                            {cart.length > 0 && (
+                                <div className="lg:hidden sticky bottom-0 p-3 bg-white/95 backdrop-blur-md border-t border-slate-200 z-30 shadow-lg">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMobilePosTab('cart')}
+                                        className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm flex items-center justify-between shadow-md transition"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <SymbolIcon className="material-symbols-outlined text-[20px]">shopping_cart</SymbolIcon>
+                                            <span>{cart.length} item{cart.length > 1 ? 's' : ''} in Bill</span>
+                                        </span>
+                                        <span className="flex items-center gap-2">
+                                            <span className="font-mono text-emerald-100">₹{pharmacyDiscountedTotal || cartTotal.toFixed(2)}</span>
+                                            <span className="text-xs bg-white/20 px-2.5 py-1 rounded-lg font-sans">Checkout →</span>
+                                        </span>
+                                    </button>
+                                </div>
+                            )}
                         </>
                     )}
 
@@ -1312,8 +1343,26 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
 
                 {/* RIGHT SIDEBAR - CART (Only visible in Pharmacy view) */}
                 {view === 'pharmacy' && (
-                    <aside className="w-full lg:w-80 xl:w-[400px] shrink-0 lg:border-l border-t lg:border-t-0 border-slate-200 bg-white flex flex-col z-20 shadow-sm lg:shadow-[-2px_0_10px_-4px_rgba(0,0,0,0.05)] h-auto max-h-[45vh] lg:max-h-full">
-                        <div className="p-4 sm:p-6 border-b border-slate-100 bg-slate-50/50">
+                    <aside className={`w-full lg:w-80 xl:w-[400px] shrink-0 lg:border-l border-t lg:border-t-0 border-slate-200 bg-white flex flex-col z-20 shadow-sm lg:shadow-[-2px_0_10px_-4px_rgba(0,0,0,0.05)] ${
+                        mobilePosTab === 'cart' ? 'flex flex-1 h-full max-h-none' : 'hidden lg:flex h-full lg:max-h-full'
+                    }`}>
+                        {/* Mobile Back Button to Items & Queue */}
+                        <div className="lg:hidden p-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setMobilePosTab('items')}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs active:scale-95 transition cursor-pointer"
+                            >
+                                <SymbolIcon className="material-symbols-outlined text-[16px]">arrow_back</SymbolIcon>
+                                <span>Back to Products & Queue</span>
+                            </button>
+                            <span className="text-xs font-black text-slate-800">
+                                ₹{pharmacyDiscountedTotal || cartTotal.toFixed(2)}
+                            </span>
+                        </div>
+                        {/* Scrollable Container for Inputs & Cart Items (Prevents footer occlusion) */}
+                        <div className="flex-1 overflow-y-auto min-h-0 divide-y divide-slate-100">
+                            <div className="p-4 sm:p-6 bg-slate-50/50">
                             <div className="flex items-center justify-between mb-3 sm:mb-4">
                                 <h2 className="font-bold text-sm sm:text-base text-slate-900 flex items-center gap-2"><SymbolIcon className="material-symbols-outlined text-emerald-600 text-[18px] sm:text-[24px]">receipt</SymbolIcon> Current Bill</h2>
                                 <button onClick={() => setCart([])} className="text-[10px] sm:text-xs text-red-500 font-bold hover:bg-red-50 px-2 py-1 rounded transition-colors">Clear</button>
@@ -1323,7 +1372,7 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                                 <div className="mb-3 bg-indigo-50/90 border border-indigo-200 text-indigo-950 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-between shadow-xs">
                                     <span className="flex items-center gap-1.5 truncate">
                                         <SymbolIcon className="material-symbols-outlined text-[16px] text-indigo-600">prescriptions</SymbolIcon>
-                                        Linked Rx #{activeRxId.slice(0, 10)}
+                                        Linked Rx #{activeRxId.replace(/^#+/, '').slice(0, 10)}
                                     </span>
                                     <button
                                         type="button"
@@ -1439,7 +1488,7 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4 min-h-[150px]">
+                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 sm:space-y-4 min-h-[150px] pb-16 sm:pb-6">
                             {cart.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-60">
                                     <SymbolIcon className="material-symbols-outlined text-4xl sm:text-6xl mb-2 sm:mb-4">shopping_cart</SymbolIcon>
@@ -1465,8 +1514,10 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                                 ))
                             )}
                         </div>
+                    </div>
 
-                        <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 sticky bottom-0 z-30 mb-safe sm:mb-0 shadow-[0_-4px_10px_-2px_rgba(0,0,0,0.05)]">
+                    {/* Pinned Billing Footer (Never occludes inputs or items) */}
+                    <div className="p-3 sm:p-5 bg-slate-50 border-t border-slate-200 shrink-0 shadow-[0_-4px_10px_-2px_rgba(0,0,0,0.05)] z-20">
                             <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
                                 <div className="flex justify-between text-xs sm:text-sm">
                                     <span className="text-slate-500 font-medium">Subtotal</span>
@@ -1550,10 +1601,10 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                                 <button
                                     type="button"
                                     onClick={() => setShowVernacularGuide(true)}
-                                    className="w-full mb-2.5 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs"
+                                    className="w-full mb-2.5 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer"
                                 >
                                     <Volume2 className="w-4 h-4 text-emerald-700" />
-                                    <span>🔊 मरीज सचित्र खुराक (Audio Schedule)</span>
+                                    <span>मरीज सचित्र खुराक (Audio Schedule)</span>
                                 </button>
                             )}
 
@@ -1561,10 +1612,14 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                                 type="button"
                                 onClick={handleProcessPharmacy} 
                                 disabled={cart.length === 0 || isProcessing} 
-                                className={`w-full font-bold py-3 sm:py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md sm:shadow-lg disabled:opacity-50 disabled:shadow-none hover:-translate-y-0.5 active:translate-y-0 text-sm sm:text-base ${
-                                    paymentMode === 'IPD_BILL' 
-                                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/20' 
-                                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                                className={`w-full font-bold py-3 sm:py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 text-sm sm:text-base cursor-pointer ${
+                                    cart.length === 0
+                                        ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                                        : isProcessing
+                                            ? 'bg-slate-300 text-slate-600 cursor-wait shadow-none'
+                                            : paymentMode === 'IPD_BILL'
+                                                ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-600/30'
+                                                : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-700/30'
                                 }`}
                             >
                                 {isProcessing ? (
@@ -1616,14 +1671,14 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
             {/* Custom Qty Entry Modal */}
             <Dialog open={!!promptItem} onOpenChange={(open) => !open && setPromptItem(null)}>
                 <DialogContent className="sm:max-w-sm bg-white text-slate-900 border-none shadow-2xl rounded-2xl overflow-hidden p-0">
-                    <div className="bg-slate-50 px-6 py-5 border-b border-slate-100 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-xl bg-blue-100 flex items-center justify-center border border-blue-200 shrink-0">
+                    <div className="bg-slate-50 px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 flex items-center gap-3.5 pr-12">
+                        <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-blue-100 flex items-center justify-center border border-blue-200 shrink-0">
                             <SymbolIcon className="material-symbols-outlined text-blue-600 text-2xl">medication</SymbolIcon>
                         </div>
-                        <div className="min-w-0">
-                            <DialogTitle className="text-xl font-bold text-slate-900 truncate" title={promptItem?.item_name}>{promptItem?.item_name}</DialogTitle>
+                        <div className="min-w-0 flex-1">
+                            <DialogTitle className="text-base sm:text-lg font-bold text-slate-900 truncate" title={promptItem?.item_name}>{promptItem?.item_name}</DialogTitle>
                             <DialogDescription className="sr-only">Enter quantity for {promptItem?.item_name}</DialogDescription>
-                            <CardDescription className="text-xs font-medium text-slate-500 mt-1">
+                            <CardDescription className="text-xs font-medium text-slate-500 mt-0.5 truncate">
                                 Batch: <span className="text-slate-700">{promptItem?.batch_number}</span> &bull; Stock: <span className="text-slate-700">{promptItem?.quantity}</span>
                             </CardDescription>
                         </div>
@@ -1725,7 +1780,7 @@ export function POSDashboard({ onNavigate, currentClinicId }: { onNavigate?: (vi
                                     <div className="h-10 w-10 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
                                         <SymbolIcon className="material-symbols-outlined text-slate-500 text-[20px]">medication</SymbolIcon>
                                     </div>
-                                    <div className="min-w-0">
+                                    <div className="min-w-0 pr-8">
                                         <h3 className="font-bold text-slate-800 text-sm leading-tight truncate">{item.item_name}</h3>
                                         <div className="flex items-center gap-2 mt-0.5">
                                             <p className="text-[10px] text-slate-500 font-mono">Batch: {item.batch_number}</p>

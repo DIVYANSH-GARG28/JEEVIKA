@@ -195,7 +195,7 @@ function AppContent() {
 
     // 3-Tier State: Hospital Admin 'Drill Down' Clinic ID
     const [selectedClinicId, setSelectedClinicId] = useState<string | null>(() => {
-        if (viewParam === 'clinic-admin' && clinics.length > 0) {
+        if ((viewParam === 'clinic-admin' || viewParam === 'pos') && clinics.length > 0) {
             return clinics[0].id;
         }
         return null;
@@ -207,7 +207,7 @@ function AppContent() {
             setView(viewParam);
             if (viewParam === 'admin') {
                 setSelectedClinicId(null);
-            } else if (viewParam === 'clinic-admin' && clinics.length > 0) {
+            } else if ((viewParam === 'clinic-admin' || viewParam === 'pos') && clinics.length > 0) {
                 setSelectedClinicId(clinics[0].id);
             }
         }
@@ -266,9 +266,11 @@ function AppContent() {
             else if (['ADMIN', 'HOSPITAL_ADMIN'].includes(profile.role)) {
                 const hospitalAdminViews: View[] = ['admin', 'inventory-dashboard', 'staff', 'shift-management', 'earnings', 'billing', 'procurement', 'expenses', 'equipments', 'ipd', 'ca-suite', 'settings', 'setup', 'pos', 'attendance', 'medicine-migration', ...clinicalViews];
                 
-                // Force 'admin' if starting (selection) OR in POS without a clinic context
-                if (view === 'selection' || (view === 'pos' && !selectedClinicId)) {
+                // Force 'admin' if starting (selection)
+                if (view === 'selection') {
                     setView('admin');
+                } else if (view === 'pos' && !selectedClinicId) {
+                    if (clinics.length > 0) setSelectedClinicId(clinics[0].id);
                 } else if (!hospitalAdminViews.includes(view)) {
                     setView('admin');
                 }

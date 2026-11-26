@@ -56,6 +56,7 @@ export function AppLayout({
                 number: '05',
                 name: 'Maritime Autonomous Agent Mesh (Scale Tier)',
                 badge: 'SPECIAL TRACK · MARITIME CLOUD AGENTS',
+                shortBadge: 'MARITIME',
                 badgeClass: 'bg-blue-50 text-blue-800 border-blue-300',
                 dotClass: 'bg-blue-600'
             };
@@ -65,6 +66,7 @@ export function AppLayout({
                 number: '06',
                 name: 'Prune AI Cost Engine & Security Gateway',
                 badge: 'SPECIAL TRACK · PRUNE PRO AI GATEWAY',
+                shortBadge: 'PRUNE AI',
                 badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-300',
                 dotClass: 'bg-emerald-600'
             };
@@ -74,6 +76,7 @@ export function AppLayout({
                 number: '02',
                 name: 'Doctor Consultation (OPD)',
                 badge: 'PORTAL 2 · CLINICIAN OPD COCKPIT',
+                shortBadge: 'PORTAL 02 · OPD',
                 badgeClass: 'bg-teal-50 text-teal-800 border-teal-200',
                 dotClass: 'bg-teal-500'
             };
@@ -83,6 +86,7 @@ export function AppLayout({
                 number: '03',
                 name: 'Emergency Triage & OPD Queue (STAT)',
                 badge: 'PORTAL 3 · EMERGENCY & OPD TRIAGE',
+                shortBadge: 'PORTAL 03 · STAT',
                 badgeClass: 'bg-rose-50 text-rose-800 border-rose-200',
                 dotClass: 'bg-rose-500 animate-ping'
             };
@@ -92,6 +96,7 @@ export function AppLayout({
                 number: '05',
                 name: 'Clinic Operations & POS',
                 badge: 'PORTAL 5 · CLINIC OPERATIONS',
+                shortBadge: 'PORTAL 05 · CLINIC',
                 badgeClass: 'bg-blue-50 text-blue-800 border-blue-200',
                 dotClass: 'bg-blue-500'
             };
@@ -100,6 +105,7 @@ export function AppLayout({
             number: '04',
             name: 'Headquarters Command Center',
             badge: 'PORTAL 4 · HQ GROUP COMMAND',
+            shortBadge: 'PORTAL 04 · HQ',
             badgeClass: 'bg-indigo-50 text-indigo-800 border-indigo-200',
             dotClass: 'bg-indigo-500'
         };
@@ -161,7 +167,7 @@ export function AppLayout({
 
     if (isClinicPaused) {
         return (
-            <div className="text-slate-900 h-screen w-screen flex overflow-hidden bg-slate-50 font-sans">
+            <div className="text-slate-900 h-screen w-full max-w-full flex overflow-hidden bg-slate-50 font-sans">
                 <div className="w-full h-full flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center ring-1 ring-slate-200">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -185,7 +191,7 @@ export function AppLayout({
     }
 
     return (
-        <div className="text-slate-900 h-screen w-screen flex overflow-hidden bg-white font-sans">
+        <div className="text-slate-900 h-screen w-full max-w-full flex overflow-hidden bg-white font-sans">
 
             {/* MOBILE OVERLAY */}
             {isMobileMenuOpen && (
@@ -434,27 +440,28 @@ export function AppLayout({
 
                 {/* HEADER */}
                 {view !== 'patient-kiosk' && (
-                <header className="min-h-[4.75rem] py-3 border-b border-slate-100 flex items-center justify-between gap-3 px-4 lg:px-8 sticky top-0 bg-white/95 backdrop-blur-md z-30 shrink-0">
-                    <div className="flex items-center gap-3 min-w-0">
+                <header className="min-h-[4rem] sm:min-h-[4.75rem] py-2.5 sm:py-3 border-b border-slate-100 flex items-center justify-between gap-2 sm:gap-3 px-3 sm:px-4 lg:px-8 sticky top-0 bg-white/95 backdrop-blur-md z-30 shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                         {!isFullBleedPortal && (
-                            <button className="lg:hidden p-2 -ml-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all flex items-center justify-center shrink-0" onClick={() => setIsMobileMenuOpen(true)}>
-                                <SymbolIcon className="material-symbols-outlined text-[24px]">menu</SymbolIcon>
+                            <button className="lg:hidden p-1.5 -ml-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all flex items-center justify-center shrink-0" onClick={() => setIsMobileMenuOpen(true)}>
+                                <SymbolIcon className="material-symbols-outlined text-[22px]">menu</SymbolIcon>
                             </button>
                         )}
-                        <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-2 mb-1.5 pt-0.5">
-                                <span className={`text-[10px] font-mono uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full border shrink-0 ${portalMeta.badgeClass}`}>
-                                    {portalMeta.badge}
+                        <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-0.5 sm:mb-1 pt-0.5">
+                                <span className={`text-[9px] sm:text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border max-w-full truncate shrink-0 ${portalMeta.badgeClass}`}>
+                                    <span className="sm:hidden">{portalMeta.shortBadge || `PORTAL ${portalMeta.number}`}</span>
+                                    <span className="hidden sm:inline">{portalMeta.badge}</span>
                                 </span>
                             </div>
-                            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight truncate max-w-[220px] sm:max-w-xs md:max-w-md lg:max-w-xl leading-snug">
+                            <h1 className="text-sm sm:text-base md:text-lg font-bold text-slate-900 tracking-tight truncate leading-tight">
                                 {portalMeta.name}
                             </h1>
                         </div>
                     </div>
 
-                    {/* DEDICATED EXIT TO PORTALS BUTTON - STITCH MINIMAL TASTE */}
-                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    {/* RIGHT CONTROLS: MARITIME / PRUNE / GUIDE / EXIT / NOTIFICATIONS / USER */}
+                    <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                         <button
                             type="button"
                             onClick={() => setView('maritime-agents')}
@@ -474,53 +481,51 @@ export function AppLayout({
                             <span>🛡️ Prune</span>
                         </button>
                         <button
+                            onClick={showGuide}
+                            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 text-indigo-600 border border-indigo-100/50 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors"
+                        >
+                            <Play className="w-3.5 h-3.5" />
+                            <span>Guide</span>
+                        </button>
+                        <button
                             type="button"
                             onClick={() => {
                                 if (!confirmCbcNavigation()) return;
                                 onSelectClinicId?.(null);
                                 navigate('/');
                             }}
-                            className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-950 text-xs font-semibold tracking-tight shadow-sm transition-all duration-150 cursor-pointer active:scale-95"
+                            className="group inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 hover:text-slate-950 text-xs font-semibold tracking-tight shadow-sm transition-all duration-150 cursor-pointer active:scale-95"
                             title="Return to Portal Selection (Choose a different dashboard)"
                         >
-                            <SymbolIcon className="material-symbols-outlined text-[16px] text-slate-400 group-hover:text-slate-700 group-hover:-translate-x-0.5 transition-all">arrow_back</SymbolIcon>
+                            <SymbolIcon className="material-symbols-outlined text-[15px] text-slate-400 group-hover:text-slate-700 group-hover:-translate-x-0.5 transition-all">arrow_back</SymbolIcon>
                             <span>Exit</span>
                         </button>
-                    </div>
 
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={showGuide}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 border border-indigo-100/50 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
-                        >
-                            <Play className="w-3.5 h-3.5" />
-                            Show guide
-                        </button>
                         {/* Notifications */}
-                        <div className="flex items-center gap-1 sm:gap-2">
+                        <div className="flex items-center gap-1">
                             {Notification.permission !== 'granted' && (
                                 <button
                                     onClick={async () => {
                                         const granted = await requestNotificationPermission();
                                         if (granted) {
-                                            // Refresh component state or show success
                                             window.location.reload();
                                         }
                                     }}
-                                    className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
+                                    className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors"
                                     title="Enable Desktop Notifications"
                                 >
-                                    <SymbolIcon className="material-symbols-outlined text-[16px]">notifications_active</SymbolIcon>
-                                    Enable Desktop Alerts
+                                    <SymbolIcon className="material-symbols-outlined text-[15px]">notifications_active</SymbolIcon>
+                                    Alerts
                                 </button>
                             )}
                             <button
                                 onClick={() => setIsNotificationsOpen(true)}
-                                className="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all active:scale-95 group"
+                                className="relative p-1.5 sm:p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all active:scale-95 group"
+                                title="Notifications"
                             >
-                                <SymbolIcon className="material-symbols-outlined text-2xl group-hover:rotate-[15deg] transition-transform">notifications</SymbolIcon>
+                                <SymbolIcon className="material-symbols-outlined text-xl sm:text-2xl group-hover:rotate-[15deg] transition-transform">notifications</SymbolIcon>
                                 {unseenCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] font-bold text-white group-hover:scale-110 transition-transform">
+                                    <span className="absolute -top-1 -right-1 min-w-[18px] h-4.5 px-1 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[9px] font-bold text-white group-hover:scale-110 transition-transform">
                                         {unseenCount > 99 ? '99+' : unseenCount}
                                     </span>
                                 )}
@@ -531,11 +536,12 @@ export function AppLayout({
                             onClose={() => setIsNotificationsOpen(false)}
                             onNavigate={setView}
                         />
+
                         {/* HEADER USER PROFILE BADGE & LOGOUT */}
-                        <div className="flex items-center gap-2 pl-3 border-l border-slate-200">
+                        <div className="flex items-center gap-1.5 pl-1.5 sm:pl-2.5 border-l border-slate-200">
                             <div
                                 title={`${userProfile?.full_name || 'Dr. Divyansh, MD, DM'} (${getBrandSubtitle()})`}
-                                className="w-8 h-8 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs ring-2 ring-white shadow-sm shrink-0"
+                                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs ring-1 ring-teal-200 sm:ring-2 sm:ring-white shadow-xs shrink-0"
                             >
                                 {userProfile?.full_name?.[0] || 'D'}
                             </div>
@@ -546,19 +552,17 @@ export function AppLayout({
                             <button
                                 onClick={onLogout}
                                 title="Sign Out"
-                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors ml-1"
+                                className="hidden sm:flex p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors ml-0.5"
                             >
                                 <SymbolIcon className="material-symbols-outlined text-[18px]">logout</SymbolIcon>
                             </button>
                         </div>
-                        {/* We leave the top right action area primarily to the child components, 
-                        but we can provide a container for them if needed later. */}
                     </div>
                 </header>
                 )}
 
                 {/* SCROLLABLE INNER CONTENT */}
-                <div id="tour-workspace-content" className={view === 'patient-kiosk' ? "flex-1 w-full overflow-x-hidden" : "flex-1 p-3 sm:p-4 lg:p-12 lg:pt-6 max-w-[1600px] w-full mx-auto overflow-x-hidden"}>
+                <div id="tour-workspace-content" className={view === 'patient-kiosk' ? "flex-1 w-full max-w-full overflow-x-hidden" : "flex-1 p-2 sm:p-4 lg:p-12 lg:pt-6 max-w-[1600px] w-full overflow-x-hidden box-border mx-auto"}>
                     {showGuideInvitation && !isTourActive && <section className="ayu-guide-invitation" aria-label="Workspace introduction"><div><strong>New to this workspace?</strong><p>Take a short guide without leaving this page.</p></div><button type="button" onClick={showGuide}>Show me around</button><button type="button" onClick={dismissGuideInvitation}>Not now</button></section>}
                     {children}
                 </div>

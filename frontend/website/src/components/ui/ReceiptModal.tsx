@@ -20,7 +20,7 @@ export function ReceiptModal({ open, onClose, sale, items }: { open: boolean, on
 
     const modalContent = (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 print:p-0"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 overflow-y-auto print:p-0"
             style={{ pointerEvents: 'auto' }}
         >
             {/* Backdrop */}
@@ -31,48 +31,48 @@ export function ReceiptModal({ open, onClose, sale, items }: { open: boolean, on
 
             {/* Modal Card */}
             <div
-                className="relative bg-white w-full max-w-xl rounded-xl shadow-2xl overflow-hidden print:shadow-none print:w-full"
+                className="relative bg-white w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden print:shadow-none print:w-full print:max-h-none my-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* HEAD (Hidden in Print) */}
-                <div className="flex justify-between items-center px-6 py-4 border-b bg-slate-50 print:hidden">
+                <div className="flex justify-between items-center px-4 sm:px-6 py-3.5 border-b bg-slate-50 shrink-0 print:hidden">
                     <div className="flex items-center gap-2">
-                        <div className="w-2 h-6 bg-blue-600 rounded-full" />
-                        <h3 className="font-bold text-slate-800">Transaction Receipt</h3>
+                        <div className="w-2 h-5 bg-blue-600 rounded-full" />
+                        <h3 className="font-bold text-slate-800 text-sm sm:text-base">Transaction Receipt</h3>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-lg transition-colors group">
+                    <button onClick={onClose} className="p-1.5 hover:bg-slate-200 rounded-lg transition-colors group cursor-pointer" title="Close receipt">
                         <X className="w-5 h-5 text-slate-400 group-hover:text-slate-600" />
                     </button>
                 </div>
 
-                {/* RECEIPT BODY */}
-                <div className="p-8 space-y-8 print:p-0" id="receipt-content">
+                {/* RECEIPT BODY (Scrollable on mobile) */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 sm:space-y-8 print:p-0 print:overflow-visible" id="receipt-content">
                     {/* Header Section */}
-                    <div className="flex justify-between items-start border-b pb-6">
-                        <div className="flex items-start gap-3.5">
+                    <div className="flex flex-col sm:flex-row justify-between items-start border-b pb-4 sm:pb-6 gap-4">
+                        <div className="flex items-start gap-3">
                             <img
                                 src="/assets/logo-jeevika.png"
                                 alt="Jeevika"
-                                className="h-11 w-auto object-contain shrink-0 mt-0.5"
+                                className="h-9 sm:h-11 w-auto object-contain shrink-0 mt-0.5"
                             />
-                            <div className="space-y-1">
-                                <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900 leading-none">{receiptHeaderName}</h2>
-                                <p className="text-sm text-slate-500 max-w-xs leading-relaxed">{receiptHeaderSubtext}</p>
+                            <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                                <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-slate-900 leading-none">{receiptHeaderName}</h2>
+                                <p className="text-xs sm:text-sm text-slate-500 max-w-xs leading-relaxed">{receiptHeaderSubtext}</p>
                             </div>
                         </div>
-                        <div className="text-right space-y-3">
-                            <div className="inline-block px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold uppercase tracking-widest rounded-md border border-blue-100">
+                        <div className="sm:text-right space-y-2 sm:space-y-3 shrink-0">
+                            <div className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 bg-blue-50 text-blue-700 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest rounded-md border border-blue-100">
                                 Official Invoice
                             </div>
-                            <div className="flex gap-4">
+                            <div className="flex sm:justify-end gap-3 sm:gap-4">
                                 <div className="space-y-0.5">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Receipt Number</p>
-                                    <p className="font-mono text-sm font-semibold text-slate-900">#{sale?.id ? sale.id.slice(0, 8).toUpperCase() : 'PENDING'}</p>
+                                    <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Receipt #</p>
+                                    <p className="font-mono text-xs sm:text-sm font-semibold text-slate-900">#{sale?.id ? sale.id.slice(0, 8).toUpperCase() : 'PENDING'}</p>
                                 </div>
                                 {sale?.daily_serial_number && (
                                     <div className="space-y-0.5 text-right">
-                                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Token No</p>
-                                        <p className="text-lg font-black text-blue-700 leading-none">#{sale.daily_serial_number}</p>
+                                        <p className="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-widest">Token No</p>
+                                        <p className="text-base sm:text-lg font-black text-blue-700 leading-none">#{sale.daily_serial_number}</p>
                                     </div>
                                 )}
                             </div>
@@ -80,50 +80,50 @@ export function ReceiptModal({ open, onClose, sale, items }: { open: boolean, on
                     </div>
 
                     {/* Meta Info Grid */}
-                    <div className="grid grid-cols-2 gap-x-12 gap-y-6">
-                        <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-x-12 sm:gap-y-6">
+                        <div className="space-y-3 sm:space-y-4">
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Billed To</p>
-                                <p className="font-bold text-slate-900 text-lg uppercase leading-tight">{sale?.patient_name || 'Guest Patient'}</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Billed To</p>
+                                <p className="font-bold text-slate-900 text-base sm:text-lg uppercase leading-tight">{sale?.patient_name || 'Guest Patient'}</p>
                                 {patientAddress && (
                                     <p className="text-xs text-slate-500 mt-1 max-w-[200px] leading-relaxed italic border-l-2 border-slate-200 pl-2">
                                         {patientAddress}
                                     </p>
                                 )}
                             </div>
-                                <div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status & Mode</p>
-                                    <div className="flex flex-wrap gap-2">
-                                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${
-                                            sale?.payment_status === 'pending'
-                                            ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                                            : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
-                                        }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${sale?.payment_status === 'pending' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                                            {sale?.payment_status === 'pending' ? 'Pending Payment' : 'Paid / Confirmed'}
-                                        </div>
-                                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider ${
-                                            sale?.payment_mode === 'IPD_BILL' 
-                                            ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
-                                            : 'bg-slate-100 text-slate-600 border border-slate-200'
-                                        }`}>
-                                            {sale?.payment_mode === 'IPD_BILL' ? 'Added to IPD Bill' : (sale?.payment_mode || 'Cash')}
-                                        </div>
+                            <div>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status & Mode</p>
+                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase tracking-wider ${
+                                        sale?.payment_status === 'pending'
+                                        ? 'bg-amber-100 text-amber-700 border border-amber-200'
+                                        : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                    }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${sale?.payment_status === 'pending' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                                        {sale?.payment_status === 'pending' ? 'Pending Payment' : 'Paid / Confirmed'}
+                                    </div>
+                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold uppercase tracking-wider ${
+                                        sale?.payment_mode === 'IPD_BILL' 
+                                        ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
+                                        : 'bg-slate-100 text-slate-600 border border-slate-200'
+                                    }`}>
+                                        {sale?.payment_mode === 'IPD_BILL' ? 'Added to IPD Bill' : (sale?.payment_mode || 'Cash')}
                                     </div>
                                 </div>
+                            </div>
                         </div>
 
-                        <div className="space-y-4 text-right">
+                        <div className="space-y-3 sm:space-y-4 sm:text-right">
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Transaction Date</p>
-                                <p className="font-semibold text-slate-900 text-sm">
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Transaction Date</p>
+                                <p className="font-semibold text-slate-900 text-xs sm:text-sm">
                                     {sale?.timestamp ? new Date(sale.timestamp).toLocaleDateString('en-IN', {
                                         day: '2-digit',
                                         month: 'short',
                                         year: 'numeric'
                                     }) : new Date().toLocaleDateString()}
                                 </p>
-                                <p className="text-[11px] text-slate-500 mt-0.5">
+                                <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">
                                     {sale?.timestamp ? new Date(sale.timestamp).toLocaleTimeString('en-IN', {
                                         hour: '2-digit',
                                         minute: '2-digit'
@@ -131,21 +131,21 @@ export function ReceiptModal({ open, onClose, sale, items }: { open: boolean, on
                                 </p>
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Consultant / Staff</p>
-                                <p className="font-semibold text-slate-900 text-sm capitalize">{sale?.doctor_name || 'Medical Staff'}</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Consultant / Staff</p>
+                                <p className="font-semibold text-slate-900 text-xs sm:text-sm capitalize">{sale?.doctor_name || 'Medical Staff'}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* ITEMS TABLE */}
-                    <div className="mt-8">
-                        <table className="w-full text-sm">
+                    <div className="mt-4 sm:mt-8 overflow-x-auto">
+                        <table className="w-full text-xs sm:text-sm min-w-[280px]">
                             <thead>
-                                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b-2 border-slate-900">
-                                    <th className="text-left py-3 w-3/5">Item Description</th>
-                                    <th className="text-center py-3">Qty</th>
-                                    <th className="text-right py-3">Rate</th>
-                                    <th className="text-right py-3">Amount</th>
+                                <tr className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b-2 border-slate-900">
+                                    <th className="text-left py-2.5 sm:py-3 w-1/2">Item Description</th>
+                                    <th className="text-center py-2.5 sm:py-3 px-1">Qty</th>
+                                    <th className="text-right py-2.5 sm:py-3 px-1">Rate</th>
+                                    <th className="text-right py-2.5 sm:py-3 px-1">Amount</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -239,11 +239,11 @@ export function ReceiptModal({ open, onClose, sale, items }: { open: boolean, on
                 </div>
 
                 {/* FOOTER (Hidden in Print) */}
-                <div className="p-4 bg-slate-50 border-t print:hidden flex gap-3">
-                    <Button variant="outline" className="flex-1 font-semibold border-slate-300 hover:bg-white" onClick={onClose}>
+                <div className="p-3 sm:p-4 bg-slate-50 border-t shrink-0 print:hidden flex gap-3">
+                    <Button variant="outline" className="flex-1 font-semibold border-slate-300 hover:bg-white cursor-pointer" onClick={onClose}>
                         Return
                     </Button>
-                    <Button className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700 font-bold shadow-lg shadow-blue-200" onClick={() => window.print()}>
+                    <Button className="flex-1 gap-2 bg-blue-600 hover:bg-blue-700 font-bold shadow-md shadow-blue-200 cursor-pointer" onClick={() => window.print()}>
                         <Printer className="w-4 h-4" /> Print Receipt
                     </Button>
                 </div>
