@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 
-export type CovexFeature = "copilot" | "intake" | "rx_audit" | "emergency" | "diagnostics";
+export type CovexFeature = "copilot" | "intake" | "rx_audit" | "emergency" | "diagnostics" | "hq_analytics";
 
 const FEATURE_ENV_KEYS: Record<CovexFeature, string> = {
   copilot: "COVEXCODE_API_KEY_COPILOT",
@@ -8,6 +8,7 @@ const FEATURE_ENV_KEYS: Record<CovexFeature, string> = {
   rx_audit: "COVEXCODE_API_KEY_RX_AUDIT",
   emergency: "COVEXCODE_API_KEY_EMERGENCY",
   diagnostics: "COVEXCODE_API_KEY_DIAGNOSTICS",
+  hq_analytics: "COVEXCODE_API_KEY_HQ_ANALYTICS",
 };
 
 const FEATURE_LABELS: Record<CovexFeature, string> = {
@@ -16,6 +17,7 @@ const FEATURE_LABELS: Record<CovexFeature, string> = {
   rx_audit: "POS & Pharmacy PMBJP / Rx Safety Audit",
   emergency: "Emergency STAT Triage & IPD Risk",
   diagnostics: "OCR Document & Lab Diagnostics Analyzer",
+  hq_analytics: "HQ Command Operations & Predictive Stock Radar",
 };
 
 export interface CovexLog {

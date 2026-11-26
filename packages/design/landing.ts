@@ -6,8 +6,10 @@ export interface LandingDestinations {
   headquarters: string;
   operations: string;
   home: string;
+  covex?: string;
 }
 const icons = {
+  bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>',
   intake:
     '<rect x="6" y="3" width="12" height="18" rx="3"/><path d="M9 8h6m-3-3v6m-3 6h6"/>',
   clinical:
@@ -69,9 +71,21 @@ export function landingMarkup(d: LandingDestinations): string {
       "Open operations",
       "",
     ],
+    ...(d.covex
+      ? ([
+          [
+            "bolt",
+            "Covexcode DeepSeek-V4 Copilot",
+            "High-speed clinical reasoning, PMBJP generic mapping & multilingual medical scribe.",
+            d.covex,
+            "Open Covexcode AI",
+            "",
+          ],
+        ] as const)
+      : []),
   ] as const;
   return `<div class="ds-site"><a class="ds-skip" href="#ds-content">Skip to content</a>
-  <header class="ds-nav"><a href="${d.home}" aria-label="Jeevika home">${brandMarkup}</a><nav aria-label="Website"><a href="#ds-platform">Platform</a><a href="#ds-journey">Our approach</a><a href="#ds-safety">Trust & care</a></nav><a class="ds-button ds-button-small" href="#ds-workspaces">Enter workspace ${designIcon("arrow")}</a></header>
+  <header class="ds-nav"><a href="${d.home}" aria-label="Jeevika home">${brandMarkup}</a><nav aria-label="Website"><a href="#ds-platform">Platform</a><a href="#ds-journey">Our approach</a><a href="#ds-safety">Trust & care</a>${d.covex ? `<a href="${d.covex}" style="font-weight:700;color:#b45309;">⚡ Covexcode AI</a>` : ""}</nav><a class="ds-button ds-button-small" href="#ds-workspaces">Enter workspace ${designIcon("arrow")}</a></header>
   <main id="ds-content"><section class="ds-hero">
     <div class="ds-hero-bg" aria-hidden="true">
       <img src="/assets/design/care-continuum.jpg" alt="An Indian doctor sharing a reassuring moment with a child and her mother" width="1400" height="933" fetchpriority="high">

@@ -8,6 +8,7 @@
 [![Hono API](https://img.shields.io/badge/Backend-Hono%20%7C%20Node%2020-E36002?logo=hono&logoColor=white)](backend)
 [![SQLite WAL](https://img.shields.io/badge/Database-SQLite%20WAL%20Local--First-003B57?logo=sqlite&logoColor=white)](backend/local)
 [![Tests Passing](https://img.shields.io/badge/Vitest-184%2F184%20Passing-brightgreen?logo=vitest&logoColor=white)](tests)
+[![Covexcode DeepSeek-V4](https://img.shields.io/badge/Headline%20AI-Covexcode%20DeepSeek--V4--Flash-F59E0B?logo=lightning&logoColor=white)](backend/src/modules/covexcode)
 [![Maritime Cloud](https://img.shields.io/badge/Agent%20Cloud-Maritime%20Scale%20Cluster-0080FF?logo=kubernetes&logoColor=white)](backend/src/modules/maritime)
 [![Prune Pro](https://img.shields.io/badge/AI%20Gateway-Prune%20Pro%20(76%25%20Saved)-00C853?logo=shield&logoColor=white)](backend/src/modules/prune)
 [![ABDM Milestone 2](https://img.shields.io/badge/NHA-ABDM%20Milestone%202%20FHIR%20R4-orange)](packages/engine)
@@ -142,6 +143,38 @@ Every portal is designed with an ultra-clean, clinical Light Theme design system
   <img src="./docs/screenshots/07_prune_ai_gateway.png" alt="Prune AI Gateway" width="100%" style="border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);" />
 </p>
 <p align="center"><em>Sub-20ms semantic caching (76.3% hit rate, ₹18,444+ saved), clinical prompt injection WAF defense (HTTP 403 Forbidden intercept in 8ms under NMC Act 2019 Rule 4.2), and DPDP Act 2023 Aadhaar PII masking.</em></p>
+
+---
+
+### 8. ⚡ Covexcode DeepSeek-V4 Clinical Copilot & Live Sandbox (`Hack with Delhi 4.0`)
+<p align="center">
+  <img src="./docs/screenshots/08_covexcode_deepseek_copilot.png" alt="Covexcode DeepSeek-V4 Clinical Copilot Dashboard" width="100%" style="border-radius: 12px; border: 1px solid #f59e0b; box-shadow: 0 4px 12px rgba(245,158,11,0.12);" />
+</p>
+<p align="center"><em>Dedicated Covexcode DeepSeek-V4-Flash Clinical Copilot console with 1-tap ACS/STEMI, Pediatric Asthma, and Type 2 Diabetes PMBJP Jan Aushadhi generic mapping benchmarks, live endpoint telemetry, and persistent per-feature API sharding.</em></p>
+
+---
+
+### 9. 🩺 Doctor OPD Cockpit — Live DeepSeek-V4 Clinical Assessment
+<p align="center">
+  <img src="./docs/screenshots/09_doctor_covexcode_opd.png" alt="Doctor OPD Consultation with Covexcode DeepSeek-V4" width="100%" style="border-radius: 12px; border: 1px solid #f59e0b; box-shadow: 0 4px 12px rgba(245,158,11,0.12);" />
+</p>
+<p align="center"><em>Integrated directly at the top of the Clinician OPD Cockpit alongside Prune and Maritime: 1-tap active patient evaluation using DeepSeek-V4-Flash producing prioritized differentials, emergency ECG red-flag warnings, and 1-click SOAP Assessment insertion.</em></p>
+
+---
+
+### 10. 🎙️ Patient Intake Kiosk — Covexcode DeepSeek Vernacular Scribe
+<p align="center">
+  <img src="./docs/screenshots/10_kiosk_covexcode_scribe.png" alt="Patient Kiosk Covexcode DeepSeek Vernacular Translation" width="100%" style="border-radius: 12px; border: 1px solid #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.10);" />
+</p>
+<p align="center"><em>Context-aware multi-turn patient intake converting Hindi/Hinglish voice & text complaints ("मुझे 6 महीने से दोनों घुटनों में दर्द है" / "sar mai dard • 6 months") into crisp EMR medical English via Covexcode DeepSeek-V4-Flash.</em></p>
+
+---
+
+### 11. 🌐 Landing Workspace Router — Instant One-Click Covexcode Access
+<p align="center">
+  <img src="./docs/screenshots/11_landing_covexcode_workspace.png" alt="JEEVIKA Landing Page Workspace Cards with Covexcode Copilot" width="100%" style="border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);" />
+</p>
+<p align="center"><em>Direct access to Covexcode DeepSeek-V4 Copilot right from the JEEVIKA Landing Page navbar and portal grid alongside Patient Intake, Doctor Consultation, Emergency Triage, Headquarters, and Clinic Operations.</em></p>
 
 ---
 
@@ -345,13 +378,38 @@ npm run dev:web
 
 ### 4. Open in Browser
 Visit **[http://localhost:5173](http://localhost:5173)** to explore:
-* **Landing Page (Portal Router):** [http://localhost:5173/#/](http://localhost:5173/#/)
-* **Patient Kiosk (Voice Intake & ABHA):** [http://localhost:5173/#/kiosk](http://localhost:5173/#/kiosk)
-* **Doctor OPD Cockpit (Ambient Scribe & PMBJP):** [http://localhost:5173/#/app?view=doctor-consultation](http://localhost:5173/#/app?view=doctor-consultation)
-* **Emergency Triage Resuscitation Bay:** [http://localhost:5173/#/app?view=emergency-triage](http://localhost:5173/#/app?view=emergency-triage)
-* **Hospital Command Center & Admin:** [http://localhost:5173/#/app?view=admin](http://localhost:5173/#/app?view=admin)
-* **Maritime Autonomous Agent Mesh (VIHAAN-X Track):** [http://localhost:5173/#/app?view=maritime-agents](http://localhost:5173/#/app?view=maritime-agents)
-* **Prune AI Cost Engine & WAF (VIHAAN-X Track):** [http://localhost:5173/#/app?view=prune-gateway](http://localhost:5173/#/app?view=prune-gateway)
+* **Landing Page (Portal Router):** [http://localhost:5174/#/](http://localhost:5174/#/)
+* **⚡ Covexcode DeepSeek-V4 Clinical Copilot (Hack with Delhi 4.0):** [http://localhost:5174/#/app?view=covexcode](http://localhost:5174/#/app?view=covexcode)
+* **Patient Kiosk (Voice Intake & ABHA):** [http://localhost:5174/#/kiosk](http://localhost:5174/#/kiosk)
+* **Doctor OPD Cockpit (Ambient Scribe & PMBJP):** [http://localhost:5174/#/app?view=doctor-consultation](http://localhost:5174/#/app?view=doctor-consultation)
+* **Emergency Triage Resuscitation Bay:** [http://localhost:5174/#/app?view=emergency-triage](http://localhost:5174/#/app?view=emergency-triage)
+* **Hospital Command Center & Admin:** [http://localhost:5174/#/app?view=admin](http://localhost:5174/#/app?view=admin)
+* **Maritime Autonomous Agent Mesh (Previous Track):** [http://localhost:5174/#/app?view=maritime-agents](http://localhost:5174/#/app?view=maritime-agents)
+* **Prune AI Cost Engine & WAF (Previous Track):** [http://localhost:5174/#/app?view=prune-gateway](http://localhost:5174/#/app?view=prune-gateway)
+
+---
+
+## ⚡ Hack with Delhi 4.0 Headline Track: Best Use of Covexcode (`deepseek-v4-flash`)
+
+> **Event:** HACK WITH DELHI 4.0 Shortlist  
+> **Primary Model:** `deepseek-v4-flash` via `https://llm.covexcode.com/event/v1`  
+> **Role in JEEVIKA:** Primary Clinical Reasoning Core, Multi-Turn Vernacular Intake Scribe, and PMBJP Jan Aushadhi Formulary Mapper
+
+### Deep Multi-Feature Integration (Not a Single Chatbox Wrapper)
+
+Instead of binding a single API key to a toy prompt box, JEEVIKA architects a **6-Feature Sharded Covexcode Routing Engine** (`backend/src/modules/covexcode/index.ts`) across the entire clinical care continuum:
+
+| Feature Slot | Env Configuration | JEEVIKA Workflow & Clinical Role | Live Endpoints |
+|:---|:---|:---|:---|
+| **`copilot`** | `COVEXCODE_API_KEY_COPILOT` | **Doctor OPD Clinical Copilot & Sandbox:** Differential diagnosis, emergency STEMI/Pediatric protocols, PMBJP generic savings tables, and 1-click SOAP note insertion. | `POST /api/v1/covex/chat` (`feature: "copilot"`) |
+| **`intake`** | `COVEXCODE_API_KEY_INTAKE` | **Patient Kiosk Multi-Turn Scribe:** Preserves cumulative vernacular context across Q&A turns (Hindi/Hinglish ➔ formal EMR English) and generates tailored triage follow-up questions. | `POST /api/v1/intake/translate`, `POST /api/v1/intake/chat` |
+| **`rx_audit`** | `COVEXCODE_API_KEY_RX_AUDIT` | **Pharmacy POS & PMBJP Safety Audit:** Cross-checks prescribed salts for Schedule H1 compliance, QT-prolongation interactions, and generic bioequivalent savings. | `POST /api/v1/covex/chat` (`feature: "rx_audit"`) |
+| **`emergency`** | `COVEXCODE_API_KEY_EMERGENCY` | **Emergency STAT & IPD Risk Stratifier:** High-acuity NEWS2 triage scoring and immediate resuscitation bay protocol guidance. | `POST /api/v1/covex/chat` (`feature: "emergency"`) |
+| **`diagnostics`** | `COVEXCODE_API_KEY_DIAGNOSTICS` | **OCR Document & Lab Diagnostics Analyzer:** Structured clinical interpretation for scanned prescriptions, CBC smears, and metabolic panels. | `POST /api/v1/covex/chat` (`feature: "diagnostics"`) |
+| **`hq_analytics`** | `COVEXCODE_API_KEY_HQ_ANALYTICS` | **HQ Command Operations & Predictive Stock Radar:** Fleet-wide clinic stockout forecasting and PMBJP batch procurement rebalancing. | `POST /api/v1/covex/chat` (`feature: "hq_analytics"`) |
+
+* **Live Covexcode Dashboard:** [`#/app?view=covexcode`](http://localhost:5174/#/app?view=covexcode) (directly accessible from Landing Page, Top Header, Sidebar, and Doctor OPD Cockpit)
+* **Feature Matrix & Health API:** `GET /api/v1/covex/status` · **Audit Telemetry:** `GET /api/v1/covex/telemetry`
 
 ---
 

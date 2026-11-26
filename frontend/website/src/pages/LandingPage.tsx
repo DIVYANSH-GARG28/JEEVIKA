@@ -10,6 +10,7 @@ const markup = landingMarkup({
   headquarters: "#/app?view=admin",
   operations: "#/app?view=clinic-admin",
   home: "#/",
+  covex: "#/app?view=covexcode",
 });
 export default function LandingPage() {
   const navigate = useNavigate();
