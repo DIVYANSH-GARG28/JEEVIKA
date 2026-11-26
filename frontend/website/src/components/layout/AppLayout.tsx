@@ -54,10 +54,10 @@ export function AppLayout({
         if (view === 'covexcode') {
             return {
                 number: '08',
-                name: 'Covexcode DeepSeek-V4 Clinical Copilot',
-                badge: 'SPONSOR TRACK · COVEXCODE DEEPSEEK-V4',
+                name: 'Covexcode Clinical Copilot',
+                badge: 'COVEXCODE · DEEPSEEK-V4',
                 shortBadge: '⚡ COVEXCODE',
-                badgeClass: 'bg-amber-50 text-amber-900 border-amber-300',
+                badgeClass: 'bg-amber-50 text-amber-900 border-amber-300 font-bold',
                 dotClass: 'bg-amber-500 animate-pulse'
             };
         }
@@ -491,15 +491,15 @@ export function AppLayout({
                                 setView('covexcode');
                                 navigate('/app?view=covexcode');
                             }}
-                            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${
+                            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition shadow-xs cursor-pointer ${
                                 view === 'covexcode'
-                                    ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-md ring-2 ring-amber-400/50 font-black'
-                                    : 'bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-amber-950 border-amber-300 shadow-2xs'
+                                    ? 'bg-amber-400 text-slate-950 border-amber-500 shadow-md ring-2 ring-amber-300'
+                                    : 'bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-slate-900 border-amber-300 shadow-2xs'
                             }`}
                             title="⚡ Covexcode DeepSeek-V4 Clinical Copilot (Headline Hackathon Sponsor Track)"
                         >
-                            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                            <span>⚡ Covexcode</span>
+                            <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse shrink-0" />
+                            <span className="font-black text-slate-950 tracking-tight">⚡ Covexcode</span>
                         </button>
                         <button
                             type="button"

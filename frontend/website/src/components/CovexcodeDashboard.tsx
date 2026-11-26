@@ -267,15 +267,6 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                 </button>
               </div>
             </div>
-                    handleExecutePrompt(p);
-                  }}
-                  className="px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold border border-purple-300 transition cursor-pointer flex items-center gap-1.5"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
-                  <span>🛡️ Prescription Safety & Interaction Audit</span>
-                </button>
-              </div>
-            </div>
 
             {/* Prompt Input Form */}
             <div className="space-y-3">
