@@ -87,25 +87,35 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
   };
 
   return (
-    <div className="flex-1 bg-slate-50 min-h-screen py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-2 sm:p-6 font-sans">
+      <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* HERO BANNER - COVEXCODE DEEPSEEK-V4 */}
-        <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-          <div className="absolute -right-12 -top-12 w-64 h-64 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute right-1/3 -bottom-16 w-80 h-80 bg-orange-400/20 rounded-full blur-3xl pointer-events-none" />
+        {/* HERO BANNER - CLINICAL LIGHT THEME MATCHING MARITIME & PRUNE */}
+        <div className="relative bg-gradient-to-r from-teal-50 via-white to-indigo-50 border border-teal-200/90 rounded-3xl p-6 sm:p-8 shadow-xs overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+            <Zap className="w-64 h-64 text-teal-700" />
+          </div>
 
-          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-wider">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                <span>Hack with Delhi 4.0 Sponsor Track · Headline AI Engine</span>
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="bg-teal-100/90 border border-teal-300 text-teal-800 text-xs font-mono font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
+                  COVEXCODE DEEPSEEK-V4 • ACTIVE
+                </span>
+                <span className="bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-mono px-3 py-1 rounded-full">
+                  6-Feature Sharded Intelligence Engine
+                </span>
+                <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full">
+                  NMC RMP & PMBJP Formularies
+                </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white flex items-center gap-3">
+
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
                 <span>⚡ Covexcode DeepSeek-V4 Clinical Copilot</span>
               </h1>
-              <p className="text-white/90 text-sm sm:text-base max-w-3xl leading-relaxed">
-                Jeevika HealthOS powers high-throughput diagnostic reasoning, automated differential clinical diagnosis, and PMBJP Jan Aushadhi generic substitutions using the official <strong className="text-white font-bold">Covexcode DeepSeek-V4-Flash LLM Engine</strong> with high-concurrency event quota.
+              <p className="text-slate-600 text-sm sm:text-base max-w-3xl leading-relaxed">
+                Jeevika HealthOS powers high-throughput diagnostic reasoning, multi-turn vernacular medical scribing, and PMBJP Jan Aushadhi generic substitutions using the <strong className="text-slate-900 font-semibold">Covexcode DeepSeek-V4-Flash Engine</strong>.
               </p>
             </div>
 
@@ -114,51 +124,51 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                 type="button"
                 onClick={() => handleExecutePrompt('Patient 52M with retrosternal crushing chest pain radiating to left arm for 2 hours, cold sweating. Suggest emergency STEMI protocol and Jan Aushadhi substitutions.')}
                 disabled={isRunning}
-                className="bg-slate-950 hover:bg-slate-900 disabled:opacity-60 text-amber-300 font-bold px-6 py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-sm cursor-pointer border border-amber-400/30 active:scale-98"
+                className="bg-teal-700 hover:bg-teal-800 disabled:opacity-60 text-white font-bold px-6 py-3.5 rounded-2xl shadow-xs hover:shadow-sm transition flex items-center justify-center gap-2 text-sm cursor-pointer"
               >
-                <Zap className="w-4 h-4 text-amber-400" />
+                <Zap className="w-4 h-4 text-teal-100" />
                 <span>Test 1-Tap STEMI Inference</span>
               </button>
             </div>
           </div>
 
           {/* Quick Metrics Strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/20">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-xs">
-              <div className="text-xs text-white/80 font-medium">Assigned Model</div>
-              <div className="text-xl sm:text-2xl font-black text-white mt-1">DeepSeek-V4-Flash</div>
-              <div className="text-[11px] text-amber-200 font-mono mt-0.5">High-Speed Medical LLM</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-teal-100">
+            <div className="bg-white/90 border border-teal-100 rounded-2xl p-4 shadow-2xs">
+              <div className="text-xs text-slate-500 font-medium">Assigned Model</div>
+              <div className="text-lg sm:text-xl font-black text-slate-900 mt-1">DeepSeek-V4-Flash</div>
+              <div className="text-[11px] text-teal-700 font-mono mt-0.5">High-Speed Medical LLM</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-xs">
-              <div className="text-xs text-white/80 font-medium">Operational Tier</div>
-              <div className="text-xl sm:text-2xl font-black text-white mt-1">Enterprise Cloud</div>
-              <div className="text-[11px] text-amber-200 font-mono mt-0.5">High-Throughput Quota</div>
+            <div className="bg-white/90 border border-teal-100 rounded-2xl p-4 shadow-2xs">
+              <div className="text-xs text-slate-500 font-medium">Sharded Pipelines</div>
+              <div className="text-lg sm:text-xl font-black text-teal-700 mt-1">6 Clinical Slots</div>
+              <div className="text-[11px] text-slate-500 font-mono mt-0.5">Copilot · Intake · Rx · ER · OCR · HQ</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-xs">
-              <div className="text-xs text-white/80 font-medium">Formulary Standards</div>
-              <div className="text-xl sm:text-2xl font-black text-white mt-1">NMC & PMBJP</div>
-              <div className="text-[11px] text-amber-200 font-mono mt-0.5">Jan Aushadhi Generics</div>
+            <div className="bg-white/90 border border-teal-100 rounded-2xl p-4 shadow-2xs">
+              <div className="text-xs text-slate-500 font-medium">Formulary Standards</div>
+              <div className="text-lg sm:text-xl font-black text-emerald-700 mt-1">NMC & PMBJP</div>
+              <div className="text-[11px] text-slate-500 font-mono mt-0.5">Jan Aushadhi Generics</div>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 shadow-xs">
-              <div className="text-xs text-white/80 font-medium">Endpoint Status</div>
-              <div className="text-xl sm:text-2xl font-black text-white mt-1">Online & Active</div>
-              <div className="text-[11px] text-amber-200 font-mono mt-0.5">llm.covexcode.com</div>
+            <div className="bg-white/90 border border-teal-100 rounded-2xl p-4 shadow-2xs">
+              <div className="text-xs text-slate-500 font-medium">Endpoint Status</div>
+              <div className="text-lg sm:text-xl font-black text-indigo-700 mt-1">Online & Active</div>
+              <div className="text-[11px] text-emerald-600 font-mono mt-0.5">llm.covexcode.com</div>
             </div>
           </div>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-2 flex-wrap">
           <button
             type="button"
             onClick={() => setActiveTab('console')}
             className={`px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 cursor-pointer ${
               activeTab === 'console' 
-                ? 'bg-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-amber-400' 
+                ? 'bg-teal-700 text-white shadow-xs' 
                 : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
             }`}
           >
-            <Zap className="w-4 h-4 text-amber-700" />
+            <Zap className="w-4 h-4" />
             <span>Interactive Clinical Console</span>
           </button>
           <button
@@ -166,11 +176,11 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
             onClick={() => setActiveTab('architecture')}
             className={`px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 cursor-pointer ${
               activeTab === 'architecture' 
-                ? 'bg-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-amber-400' 
+                ? 'bg-teal-700 text-white shadow-xs' 
                 : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
             }`}
           >
-            <Cpu className="w-4 h-4 text-amber-700" />
+            <Cpu className="w-4 h-4" />
             <span>Architecture & Standards</span>
           </button>
           <button
@@ -178,11 +188,11 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
             onClick={() => setActiveTab('logs')}
             className={`px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 cursor-pointer ${
               activeTab === 'logs' 
-                ? 'bg-amber-500 text-slate-950 font-black shadow-xs ring-1 ring-amber-400' 
+                ? 'bg-teal-700 text-white shadow-xs' 
                 : 'bg-white text-slate-600 hover:text-slate-900 border border-slate-200'
             }`}
           >
-            <Activity className="w-4 h-4 text-amber-700" />
+            <Activity className="w-4 h-4" />
             <span>Live Inference Telemetry ({logs.length})</span>
           </button>
         </div>
@@ -192,8 +202,8 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
           <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold mb-2">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold mb-2">
+                  <Sparkles className="w-3.5 h-3.5 text-teal-700" />
                   <span>Clinical Intelligence Engine · DeepSeek-V4-Flash</span>
                 </div>
                 <h3 className="text-xl font-black text-slate-900">
@@ -224,9 +234,9 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                     setPrompt(p);
                     handleExecutePrompt(p);
                   }}
-                  className="px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-950 font-bold border border-amber-300 transition cursor-pointer flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-900 font-bold border border-teal-200 transition cursor-pointer flex items-center gap-1.5"
                 >
-                  <Activity className="w-3.5 h-3.5 text-amber-600" />
+                  <Activity className="w-3.5 h-3.5 text-teal-700" />
                   <span>🫀 Ramesh Chandra (ACS / STEMI Emergency)</span>
                 </button>
                 <button
@@ -236,9 +246,9 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                     setPrompt(p);
                     handleExecutePrompt(p);
                   }}
-                  className="px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-950 font-bold border border-sky-300 transition cursor-pointer flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-900 font-bold border border-blue-200 transition cursor-pointer flex items-center gap-1.5"
                 >
-                  <Activity className="w-3.5 h-3.5 text-sky-600" />
+                  <Activity className="w-3.5 h-3.5 text-blue-600" />
                   <span>🫁 Aarav Patel (Pediatric Asthma & Wheezing)</span>
                 </button>
                 <button
@@ -248,7 +258,7 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                     setPrompt(p);
                     handleExecutePrompt(p);
                   }}
-                  className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-950 font-bold border border-emerald-300 transition cursor-pointer flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 font-bold border border-emerald-200 transition cursor-pointer flex items-center gap-1.5"
                 >
                   <Activity className="w-3.5 h-3.5 text-emerald-600" />
                   <span>💊 Sunita Devi (T2D & HTN Generic Switch)</span>
@@ -260,9 +270,9 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                     setPrompt(p);
                     handleExecutePrompt(p);
                   }}
-                  className="px-3 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-950 font-bold border border-purple-300 transition cursor-pointer flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-bold border border-indigo-200 transition cursor-pointer flex items-center gap-1.5"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
                   <span>🛡️ Prescription Safety & Interaction Audit</span>
                 </button>
               </div>
@@ -277,10 +287,10 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 rows={3}
-                className="w-full p-4 rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-sans focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 transition leading-relaxed"
+                className="w-full p-4 rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-sans focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-600 transition leading-relaxed"
                 placeholder="Enter patient clinical presentation, symptoms, or diagnostic query..."
               />
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
                 <span className="text-xs text-slate-400 font-mono">
                   Endpoint: llm.covexcode.com/event/v1 · deepseek-v4-flash
                 </span>
@@ -288,9 +298,9 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                   type="button"
                   onClick={() => handleExecutePrompt()}
                   disabled={isRunning}
-                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-sm shadow-sm transition flex items-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95"
+                  className="px-6 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold text-sm shadow-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  {isRunning ? <RefreshCw className="w-4 h-4 animate-spin text-slate-950" /> : <Zap className="w-4 h-4 text-slate-950" />}
+                  {isRunning ? <RefreshCw className="w-4 h-4 animate-spin text-white" /> : <Zap className="w-4 h-4 text-teal-100" />}
                   <span>{isRunning ? 'Querying DeepSeek...' : 'Run DeepSeek Inference'}</span>
                 </button>
               </div>
@@ -298,14 +308,14 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
 
             {/* Inference Result HUD */}
             {result && (
-              <div className={`p-5 rounded-2xl border space-y-3.5 ${result.success ? 'bg-amber-50/40 border-amber-300' : 'bg-rose-50/50 border-rose-200'}`}>
+              <div className={`p-5 rounded-2xl border space-y-3.5 ${result.success ? 'bg-teal-50/40 border-teal-200' : 'bg-rose-50/50 border-rose-200'}`}>
                 <div className="flex items-center justify-between text-xs flex-wrap gap-2">
-                  <span className={`font-bold flex items-center gap-1.5 ${result.success ? 'text-amber-950' : 'text-rose-900'}`}>
-                    {result.success ? <CheckCircle2 className="w-4 h-4 text-amber-600" /> : <AlertTriangle className="w-4 h-4 text-rose-600" />}
+                  <span className={`font-bold flex items-center gap-1.5 ${result.success ? 'text-teal-900' : 'text-rose-900'}`}>
+                    {result.success ? <CheckCircle2 className="w-4 h-4 text-teal-700" /> : <AlertTriangle className="w-4 h-4 text-rose-600" />}
                     DeepSeek-V4 Clinical Response ({result.model || 'deepseek-v4-flash'})
                   </span>
                   {(result.latencyMs !== undefined || result.tokens !== undefined) && (
-                    <span className="font-mono text-amber-900 font-bold bg-amber-100 px-2.5 py-1 rounded-lg border border-amber-300">
+                    <span className="font-mono text-teal-800 font-bold bg-white px-2.5 py-1 rounded-lg border border-teal-200">
                       {result.latencyMs !== undefined ? `Latency: ${result.latencyMs}ms` : ''}
                       {result.tokens !== undefined ? ` · ${result.tokens} tokens` : ''}
                     </span>
@@ -313,22 +323,22 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                 </div>
 
                 {result.notice && (
-                  <div className="text-xs text-amber-900 bg-amber-100 p-2.5 rounded-xl border border-amber-300 font-mono">
+                  <div className="text-xs text-slate-700 bg-slate-100 p-2.5 rounded-xl border border-slate-200 font-mono">
                     ℹ️ {result.notice}
                   </div>
                 )}
 
-                <div className="p-5 sm:p-6 rounded-2xl bg-white border border-amber-200 text-sm font-sans leading-relaxed space-y-3 shadow-xs">
+                <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 text-sm font-sans leading-relaxed space-y-3 shadow-2xs">
                   {result.response.split('\n').map((line: string, i: number) => {
                     const trimmed = line.trim();
                     if (!trimmed) return <div key={i} className="h-0.5" />;
                     if (trimmed.startsWith('## ') || trimmed.startsWith('# ')) {
-                      return <h4 key={i} className="font-black text-slate-900 text-sm sm:text-base mt-3 mb-1 text-amber-950 border-b border-slate-100 pb-1">{trimmed.replace(/^#+\s*/, '')}</h4>;
+                      return <h4 key={i} className="font-black text-slate-900 text-sm sm:text-base mt-3 mb-1 border-b border-slate-100 pb-1">{trimmed.replace(/^#+\s*/, '')}</h4>;
                     }
                     if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
                       return (
                         <div key={i} className="flex items-start gap-2 text-xs sm:text-sm pl-2">
-                          <span className="text-amber-600 font-bold mt-0.5">•</span>
+                          <span className="text-teal-700 font-bold mt-0.5">•</span>
                           <span dangerouslySetInnerHTML={{ __html: trimmed.slice(2).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
                         </div>
                       );
@@ -337,7 +347,7 @@ export function CovexcodeDashboard({ onNavigate }: { onNavigate?: (view: string)
                       const num = trimmed.match(/^(\d+\.)\s/)?.[1];
                       return (
                         <div key={i} className="flex items-start gap-2 text-xs sm:text-sm pl-2">
-                          <span className="font-bold text-amber-800 min-w-[20px]">{num}</span>
+                          <span className="font-bold text-teal-800 min-w-[20px]">{num}</span>
                           <span dangerouslySetInnerHTML={{ __html: trimmed.replace(/^\d+\.\s*/, '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
                         </div>
                       );

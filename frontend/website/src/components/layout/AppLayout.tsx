@@ -57,8 +57,8 @@ export function AppLayout({
                 name: 'Covexcode Clinical Copilot',
                 badge: 'COVEXCODE · DEEPSEEK-V4',
                 shortBadge: '⚡ COVEXCODE',
-                badgeClass: 'bg-amber-50 text-amber-900 border-amber-300 font-bold',
-                dotClass: 'bg-amber-500 animate-pulse'
+                badgeClass: 'bg-teal-50 text-teal-800 border-teal-200 font-bold',
+                dotClass: 'bg-teal-600 animate-pulse'
             };
         }
         if (view === 'maritime-agents') {
@@ -491,15 +491,15 @@ export function AppLayout({
                                 setView('covexcode');
                                 navigate('/app?view=covexcode');
                             }}
-                            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition shadow-xs cursor-pointer ${
+                            className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition shadow-xs cursor-pointer ${
                                 view === 'covexcode'
-                                    ? 'bg-amber-400 text-slate-950 border-amber-500 shadow-md ring-2 ring-amber-300'
-                                    : 'bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-slate-900 border-amber-300 shadow-2xs'
+                                    ? 'bg-teal-700 text-white border-teal-700'
+                                    : 'bg-teal-50/80 hover:bg-teal-100 text-teal-800 border-teal-200/80'
                             }`}
-                            title="⚡ Covexcode DeepSeek-V4 Clinical Copilot (Headline Hackathon Sponsor Track)"
+                            title="Covexcode DeepSeek-V4 Clinical Copilot"
                         >
-                            <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse shrink-0" />
-                            <span className="font-black text-slate-950 tracking-tight">⚡ Covexcode</span>
+                            <span className={`w-2 h-2 rounded-full animate-pulse shrink-0 ${view === 'covexcode' ? 'bg-white' : 'bg-teal-600'}`} />
+                            <span>⚡ Covexcode</span>
                         </button>
                         <button
                             type="button"

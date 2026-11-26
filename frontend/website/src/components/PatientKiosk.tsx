@@ -2360,17 +2360,17 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
                   )}
                 </div>
 
-                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-left">
+                <div className="p-3 bg-emerald-50/70 border border-emerald-200 rounded-xl text-left">
                   <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-wider mb-1">
                     <span className="text-emerald-800 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                      <span className="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
                       <span>⚡ Covexcode DeepSeek Scribe (Clinical EMR Translation):</span>
                     </span>
-                    <span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300 font-mono text-[9px]">
+                    <span className="bg-white text-teal-800 px-2 py-0.5 rounded-full border border-teal-200 font-mono text-[9px]">
                       DeepSeek-V4
                     </span>
                   </div>
-                  <p className="text-xs text-emerald-950 font-bold min-h-[18px] leading-relaxed">
+                  <p className="text-xs text-slate-900 font-bold min-h-[18px] leading-relaxed">
                     {translationStatus === 'translating'
                       ? '⚡ Covexcode DeepSeek translating into clinical English…'
                       : translationStatus === 'unavailable'
@@ -2381,32 +2381,32 @@ export function PatientKiosk({ onTokenGenerated, onNavigate: _onNavigate }: Pati
                   </p>
                 </div>
 
-                {/* Real-time Covexcode, Prune & Maritime Operational Telemetry */}
+                {/* Real-time Covexcode, Prune & Maritime Operational Telemetry (Clinical Light Cards) */}
                 <div className="space-y-2 pt-1 text-[11px]">
-                  <div className="flex items-center justify-between bg-amber-950 text-amber-200 px-3 py-2 rounded-xl border border-amber-800 shadow-sm">
+                  <div className="flex items-center justify-between bg-teal-50/80 text-teal-900 px-3 py-2 rounded-xl border border-teal-200 shadow-2xs">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                      <span className="font-mono font-bold text-amber-300">⚡ Covexcode AI:</span>
+                      <span className="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
+                      <span className="font-mono font-bold text-teal-800">⚡ Covexcode AI:</span>
                       <span>DeepSeek-V4-Flash Clinical Intelligence & Scribe Active</span>
                     </div>
-                    <span className="text-[9px] font-mono bg-amber-900/60 text-amber-200 px-2 py-0.5 rounded border border-amber-700 font-bold">Hack with Delhi 4.0</span>
+                    <span className="text-[9px] font-mono bg-white text-teal-800 px-2 py-0.5 rounded border border-teal-200 font-bold">Clinical Core</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <div className="flex items-center justify-between bg-emerald-950 text-emerald-200 px-3 py-2 rounded-xl border border-emerald-800 shadow-sm">
+                    <div className="flex items-center justify-between bg-emerald-50/70 text-emerald-900 px-3 py-2 rounded-xl border border-emerald-200 shadow-2xs">
                       <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <span className="font-mono font-bold text-emerald-300">🛡️ Prune Gateway:</span>
+                        <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                        <span className="font-mono font-bold text-emerald-800">🛡️ Prune Gateway:</span>
                         <span>Zero PII Leakage (Masked)</span>
                       </div>
-                      <span className="text-[9px] font-mono bg-emerald-900/60 px-1.5 py-0.5 rounded border border-emerald-700">Sub-20ms SLA</span>
+                      <span className="text-[9px] font-mono bg-white text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200">Sub-20ms SLA</span>
                     </div>
-                    <div className="flex items-center justify-between bg-blue-950 text-blue-200 px-3 py-2 rounded-xl border border-blue-800 shadow-sm">
+                    <div className="flex items-center justify-between bg-blue-50/70 text-blue-900 px-3 py-2 rounded-xl border border-blue-200 shadow-2xs">
                       <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                        <span className="font-mono font-bold text-blue-300">🌊 Maritime Cloud:</span>
+                        <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                        <span className="font-mono font-bold text-blue-800">🌊 Maritime Cloud:</span>
                         <span>Indic to FHIR Scribe</span>
                       </div>
-                      <span className="text-[9px] font-mono bg-blue-900/60 px-1.5 py-0.5 rounded border border-blue-700">Scale Plan</span>
+                      <span className="text-[9px] font-mono bg-white text-blue-800 px-1.5 py-0.5 rounded border border-blue-200">Scale Plan</span>
                     </div>
                   </div>
                 </div>
