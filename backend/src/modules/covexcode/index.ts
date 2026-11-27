@@ -45,13 +45,20 @@ export function getCovexConfig(envOrContext?: any, feature: CovexFeature = "copi
     ? envOrContext.env
     : envOrContext) || {};
 
-  const endpoint = (env?.COVEXCODE_ENDPOINT as string | undefined) ||
+  const endpointVar = `COVEXCODE_ENDPOINT_${feature.toUpperCase()}`;
+  const defaultFeatureEndpoints: Partial<Record<CovexFeature, string>> = {
+    intake: "https://llm.covexcode.com/v1",
+  };
+  const endpoint = (env?.[endpointVar] as string | undefined) ||
+    process.env[endpointVar] ||
+    defaultFeatureEndpoints[feature] ||
+    (env?.COVEXCODE_ENDPOINT as string | undefined) ||
     process.env.COVEXCODE_ENDPOINT ||
     "https://llm.covexcode.com/event/v1";
 
   const featureVar = FEATURE_ENV_KEYS[feature];
   const featureDefaults: Partial<Record<CovexFeature, string>> = {
-    intake: "bx-live-1926081e3c39235d71f8b0d6f647480e",       // Key #1: Divyansh
+    intake: "bx-live-c6fc7d01b3bb94b97223af151abfebe2",       // Key #1: Divyansh ($10 credit /v1)
     copilot: "bx-live-4a8ec18ec6c885f28c0d72be6369a5be",      // Key #2: Ruchir
     rx_audit: "bx-live-22e73c726fe91d01637779a2e97f5e64",     // Key #3: Savi
     emergency: "bx-live-c4c06b39d0568ecef7385ca33668cbb4",    // Key #4: Charu
@@ -110,6 +117,7 @@ covexRouter.get("/status", async (c) => {
       feature: f,
       envVar,
       label: FEATURE_LABELS[f],
+      endpoint: cfg.endpoint,
       apiKeyMasked: cfg.apiKeyMasked,
       dedicated: hasDedicatedEnv || f === "copilot" || f === "intake",
     };

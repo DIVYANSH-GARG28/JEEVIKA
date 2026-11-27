@@ -256,12 +256,57 @@ intakeRouter.post("/translate", async (c) => {
 });
 
 intakeRouter.post("/soap", async (c) => {
+  const isTestEnv = Boolean(process.env.VITEST || process.env.NODE_ENV === "test");
   const body = ((await c.req.json().catch(() => ({}))) || {}) as {
     complaint?: string;
     vitals?: Record<string, any>;
     history?: string;
   };
   const complaint = body.complaint || "Patient reports acute headache and fever for 2 days.";
+
+  const { endpoint: covexEndpoint, apiKey: covexApiKey, model: covexModel } = getCovexConfig(c, "intake");
+  if (covexApiKey && !isTestEnv) {
+    try {
+      const covexRes = await fetch(`${covexEndpoint}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${covexApiKey}`,
+          "Content-Type": "application/json",
+          "User-Agent": "JEEVIKA-HealthOS/1.0",
+        },
+        body: JSON.stringify({
+          model: covexModel,
+          messages: [
+            {
+              role: "system",
+              content: 'You are JEEVIKA\'s clinical SOAP documentation assistant for Indian clinics. Output ONLY raw JSON with keys: "subjective", "objective", "assessment", "plan" (concise, NMC RMP compliant, include PMBJP Jan Aushadhi generic options in plan).'
+            },
+            {
+              role: "user",
+              content: `Patient complaint: "${complaint}"\nVitals: ${JSON.stringify(body.vitals || {})}\nHistory: ${body.history || "None provided"}`
+            }
+          ],
+          max_tokens: 900,
+          temperature: 0.2,
+        }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (covexRes.ok) {
+        const data = (await covexRes.json()) as any;
+        const rawText = data?.choices?.[0]?.message?.content?.trim() || "";
+        const match = rawText.match(/\{[\s\S]*\}/);
+        if (match) {
+          const soap = JSON.parse(match[0]);
+          return c.json({
+            soap,
+            source: "covexcode-deepseek",
+            tokensUsed: data?.usage?.total_tokens ?? 0,
+            citations: ["utterance_0", "intake_vitals"],
+          });
+        }
+      }
+    } catch {}
+  }
 
   if (c.env?.GEMINI_API_KEY) {
     try {
