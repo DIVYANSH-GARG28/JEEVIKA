@@ -50,6 +50,7 @@ export function getCovexConfig(envOrContext?: any, feature: CovexFeature = "copi
     intake: "https://llm.covexcode.com/v1",
     rx_audit: "https://llm.covexcode.com/v1",
     emergency: "https://llm.covexcode.com/v1",
+    diagnostics: "https://llm.covexcode.com/v1",
   };
   const endpoint = (env?.[endpointVar] as string | undefined) ||
     process.env[endpointVar] ||
@@ -64,7 +65,7 @@ export function getCovexConfig(envOrContext?: any, feature: CovexFeature = "copi
     copilot: "bx-live-4a8ec18ec6c885f28c0d72be6369a5be",      // Key #2: Ruchir
     rx_audit: "bx-live-acf9d44547af96cd5c16da91fcbdaaea",     // Key #3: Savi ($10 credit /v1)
     emergency: "bx-live-f7bd572a876dc1025b72975ca3f1b9d4",    // Key #4: Charu ($10 credit /v1)
-    diagnostics: "bx-live-d0a1cf70f9f97514180cc2b26dee759d",  // Key #5: Dipak
+    diagnostics: "bx-live-f30d9c5aabf36d3baaf7d41395df3fb3",  // Key #5: Dipak ($10 credit /v1)
     hq_analytics: "bx-live-c2676132f92fe8ddc0394a1df6324d99", // Key #6: Gupta
   };
   const featureDefault = featureDefaults[feature] || "bx-live-4a8ec18ec6c885f28c0d72be6369a5be";
@@ -121,7 +122,7 @@ covexRouter.get("/status", async (c) => {
       label: FEATURE_LABELS[f],
       endpoint: cfg.endpoint,
       apiKeyMasked: cfg.apiKeyMasked,
-      dedicated: hasDedicatedEnv || f === "copilot" || f === "intake" || f === "rx_audit" || f === "emergency",
+      dedicated: hasDedicatedEnv || f === "copilot" || f === "intake" || f === "rx_audit" || f === "emergency" || f === "diagnostics",
     };
   });
 

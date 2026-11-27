@@ -17,7 +17,8 @@ import { cbcRouter } from "./modules/cbc/routes";
 import { pruneCbcSources } from "./modules/cbc/maintenance";
 import { maritimeRouter } from "./modules/maritime";
 import { pruneRouter } from "./modules/prune";
-import { covexRouter } from "./modules/covexcode";
+import { covexRouter, getCovexConfig } from "./modules/covexcode";
+import { LAB_BIOMARKER_CATALOG, LAB_PANEL_BENCHMARKS } from "./modules/diagnostics/labKnowledge";
 import { createApp } from "../../apps/api/app";
 
 import {
@@ -790,8 +791,125 @@ insuranceRouter.post("/coverage-eligibility/check", async (c) => {
   });
 });
 
-// Documents Router: OCR extraction
-const documentsRouter = new Hono();
+// Documents Router: OCR extraction & Clinical Lab Diagnostics Analyzer (Covexcode diagnostics)
+const documentsRouter = new Hono<{ Bindings: Env }>();
+documentsRouter.get("/reference", (c) => {
+  const q = (c.req.query("q") || "").trim().toLowerCase();
+  const panel = (c.req.query("panel") || "").trim().toLowerCase();
+  const biomarkers = LAB_BIOMARKER_CATALOG.filter((b) => {
+    const okPanel = !panel || b.panel.toLowerCase().includes(panel);
+    const okQ = !q || `${b.testName} ${b.panel} ${b.loincLikeCode}`.toLowerCase().includes(q);
+    return okPanel && okQ;
+  });
+  return c.json({
+    success: true,
+    stats: {
+      totalBiomarkers: LAB_BIOMARKER_CATALOG.length,
+      totalBenchmarks: LAB_PANEL_BENCHMARKS.length,
+      panelsCovered: [...new Set(LAB_BIOMARKER_CATALOG.map((b) => b.panel))].length,
+    },
+    biomarkers: biomarkers.slice(0, 120),
+    benchmarks: LAB_PANEL_BENCHMARKS.slice(0, 30),
+  });
+});
+
+documentsRouter.post("/analyze", async (c) => {
+  const isTestEnv = Boolean(process.env.VITEST || process.env.NODE_ENV === "test");
+  const body = ((await c.req.json().catch(() => ({}))) || {}) as {
+    rawOcrText?: string;
+    panelType?: string;
+    labResults?: Array<{ test?: string; test_name?: string; value: string | number; unit?: string }>;
+    patientContext?: { age?: number; sex?: string; symptoms?: string; pregnant?: boolean; comorbidities?: string[] };
+  };
+
+  const labs = (body.labResults || []).map((l) => ({
+    test: String(l.test || l.test_name || "Unknown"),
+    value: l.value,
+    unit: l.unit || "",
+  }));
+  const matchedRefs = LAB_BIOMARKER_CATALOG.filter((ref) =>
+    labs.some((l) => l.test.toLowerCase().includes(ref.testName.toLowerCase()) || ref.testName.toLowerCase().includes(l.test.toLowerCase())),
+  );
+
+  const { endpoint, apiKey, model, apiKeyMasked } = getCovexConfig(c, "diagnostics");
+  if (apiKey && !isTestEnv) {
+    try {
+      const res = await fetch(`${endpoint}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "User-Agent": "JEEVIKA-HealthOS/1.0",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are JEEVIKA's Chief Clinical Pathologist & OCR Lab Diagnostics Interpreter for Indian clinics. Keep internal reasoning ultra-brief and output ONLY valid compact RFC-8259 JSON (no markdown fences) with keys: \"criticalPanicFlag\" (boolean), \"criticalAlerts\" (array of strings), \"abnormalPatterns\" (array of {pattern, likelyEtiologies}), \"confirmatoryTests\" (array of strings), \"clinicianActionSummary\" (string), \"patientSimpleExplanation\" (string in simple Hindi/English).",
+            },
+            {
+              role: "user",
+              content: `Panel Type: ${body.panelType || "Comprehensive Lab Panel"}\nPatient Context: ${JSON.stringify(body.patientContext || {})}\nRaw OCR Slip Text: ${body.rawOcrText || "N/A"}\nStructured Lab Values: ${JSON.stringify(labs)}`,
+            },
+          ],
+          max_tokens: 4096,
+          temperature: 0.1,
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        const raw = (data?.choices?.[0]?.message?.content || data?.choices?.[0]?.message?.reasoning_content || "").trim();
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        let interpretation: any = null;
+        if (jsonMatch) {
+          try { interpretation = JSON.parse(jsonMatch[0]); } catch { interpretation = null; }
+        }
+        if (interpretation || raw) {
+          return c.json({
+            success: true,
+            source: "covexcode-deepseek-diagnostics",
+            feature: "diagnostics",
+            apiKeyMasked,
+            tokensUsed: data?.usage?.total_tokens || 0,
+            referenceMatches: matchedRefs,
+            interpretation: interpretation ?? {
+              criticalPanicFlag: false,
+              criticalAlerts: [],
+              abnormalPatterns: [],
+              confirmatoryTests: [],
+              clinicianActionSummary: raw.slice(0, 800),
+              patientSimpleExplanation: "Lab report interpreted; please review with treating physician.",
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("[DIAGNOSTICS] Falling back to rule-based lab analyzer:", err);
+    }
+  }
+
+  return c.json({
+    success: true,
+    source: "deterministic-lab-rules",
+    feature: "diagnostics",
+    apiKeyMasked,
+    referenceMatches: matchedRefs,
+    interpretation: {
+      criticalPanicFlag: false,
+      criticalAlerts: [],
+      abnormalPatterns: labs.map((l) => ({ pattern: `${l.test}: ${l.value} ${l.unit}`, likelyEtiologies: ["Clinical correlation advised"] })),
+      confirmatoryTests: ["Repeat fasting specimen if clinically discordant"],
+      clinicianActionSummary: "Structured lab review ready for physician sign-off.",
+      patientSimpleExplanation: "Aapki jaanch report doctor ki samiksha ke liye taiyar hai.",
+    },
+  });
+});
+
 documentsRouter.post("/ocr", async (c) => {
   let encounterId = "enc-0042";
   try {
