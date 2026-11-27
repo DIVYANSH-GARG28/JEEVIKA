@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { ICMR_OPD_GUIDELINES, OPD_CONSULT_BENCHMARKS } from "./opdGuidelines";
 
 export type CovexFeature = "copilot" | "intake" | "rx_audit" | "emergency" | "diagnostics" | "hq_analytics";
 
@@ -47,6 +48,7 @@ export function getCovexConfig(envOrContext?: any, feature: CovexFeature = "copi
 
   const endpointVar = `COVEXCODE_ENDPOINT_${feature.toUpperCase()}`;
   const defaultFeatureEndpoints: Partial<Record<CovexFeature, string>> = {
+    copilot: "https://llm.covexcode.com/v1",
     intake: "https://llm.covexcode.com/v1",
     rx_audit: "https://llm.covexcode.com/v1",
     emergency: "https://llm.covexcode.com/v1",
@@ -62,13 +64,13 @@ export function getCovexConfig(envOrContext?: any, feature: CovexFeature = "copi
   const featureVar = FEATURE_ENV_KEYS[feature];
   const featureDefaults: Partial<Record<CovexFeature, string>> = {
     intake: "bx-live-c6fc7d01b3bb94b97223af151abfebe2",       // Key #1: Divyansh ($10 credit /v1)
-    copilot: "bx-live-4a8ec18ec6c885f28c0d72be6369a5be",      // Key #2: Ruchir
+    copilot: "bx-live-91f169f58c19ada0ff886aea6c46801a",      // Key #2: Ruchir ($10 credit /v1)
     rx_audit: "bx-live-acf9d44547af96cd5c16da91fcbdaaea",     // Key #3: Savi ($10 credit /v1)
     emergency: "bx-live-f7bd572a876dc1025b72975ca3f1b9d4",    // Key #4: Charu ($10 credit /v1)
     diagnostics: "bx-live-f30d9c5aabf36d3baaf7d41395df3fb3",  // Key #5: Dipak ($10 credit /v1)
     hq_analytics: "bx-live-c2676132f92fe8ddc0394a1df6324d99", // Key #6: Gupta
   };
-  const featureDefault = featureDefaults[feature] || "bx-live-4a8ec18ec6c885f28c0d72be6369a5be";
+  const featureDefault = featureDefaults[feature] || "bx-live-91f169f58c19ada0ff886aea6c46801a";
 
   const apiKey = (env?.[featureVar] as string | undefined) ||
     process.env[featureVar] ||
@@ -270,4 +272,117 @@ covexRouter.post("/chat", async (c) => {
       tokens: 50
     });
   }
+});
+
+// GET /api/v1/covex/guidelines — ICMR / NHM Standard Treatment Guidelines & OPD Copilot Benchmarks
+covexRouter.get("/guidelines", (c) => {
+  const q = (c.req.query("q") || "").trim().toLowerCase();
+  const specialty = (c.req.query("specialty") || "").trim().toLowerCase();
+  const guidelines = ICMR_OPD_GUIDELINES.filter((g) => {
+    const okSpec = !specialty || g.specialty.toLowerCase().includes(specialty);
+    const okQ = !q || `${g.condition} ${g.specialty} ${g.icd10Code}`.toLowerCase().includes(q);
+    return okSpec && okQ;
+  });
+  return c.json({
+    success: true,
+    stats: {
+      totalGuidelines: ICMR_OPD_GUIDELINES.length,
+      totalConsultBenchmarks: OPD_CONSULT_BENCHMARKS.length,
+      specialtiesCovered: [...new Set(ICMR_OPD_GUIDELINES.map((g) => g.specialty))].length,
+    },
+    guidelines: guidelines.slice(0, 120),
+    benchmarks: OPD_CONSULT_BENCHMARKS.slice(0, 30),
+  });
+});
+
+// POST /api/v1/covex/consult — Structured Doctor OPD Clinical Copilot Consultation (Ruchir copilot key)
+covexRouter.post("/consult", async (c) => {
+  const isTestEnv = Boolean(process.env.VITEST || process.env.NODE_ENV === "test");
+  const body = ((await c.req.json().catch(() => ({}))) || {}) as {
+    chiefComplaint?: string;
+    vitals?: Record<string, any>;
+    history?: string;
+    labs?: string;
+    specialty?: string;
+  };
+  const complaint = body.chiefComplaint || "Progressive exertional dyspnea and bilateral pedal edema for 2 weeks";
+  const matchedGuidelines = ICMR_OPD_GUIDELINES.filter((g) =>
+    complaint.toLowerCase().includes(g.condition.split(" ")[0]?.toLowerCase() || ""),
+  ).slice(0, 3);
+
+  const { endpoint, apiKey, model, apiKeyMasked } = getCovexConfig(c, "copilot");
+  if (apiKey && !isTestEnv) {
+    try {
+      const res = await fetch(`${endpoint}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "User-Agent": "JEEVIKA-HealthOS/1.0",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are JEEVIKA's Senior OPD Consultant Copilot following ICMR / NHM India STGs, NMC RMP standards, and PMBJP Jan Aushadhi generics. Keep internal reasoning ultra-brief and output ONLY valid compact RFC-8259 JSON (no markdown fences) with keys: \"differentialDiagnoses\" (array of {diagnosis, likelihood, reasoning}), \"targetedWorkup\" (array of strings), \"pmbjpTreatmentPlan\" (array of {drugGeneric, doseSchedule, duration, pmbjpApproxInr}), \"redFlags\" (array of strings), \"followUpAndCounseling\" (string).",
+            },
+            {
+              role: "user",
+              content: `Specialty: ${body.specialty || "General Medicine"}\nChief Complaint: ${complaint}\nVitals: ${JSON.stringify(body.vitals || {})}\nHistory: ${body.history || "None"}\nAvailable Labs: ${body.labs || "Pending"}`,
+            },
+          ],
+          max_tokens: 4096,
+          temperature: 0.15,
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        const raw = (data?.choices?.[0]?.message?.content || data?.choices?.[0]?.message?.reasoning_content || "").trim();
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        let consult: any = null;
+        if (jsonMatch) {
+          try { consult = JSON.parse(jsonMatch[0]); } catch { consult = null; }
+        }
+        if (consult || raw) {
+          return c.json({
+            success: true,
+            source: "covexcode-deepseek-copilot",
+            feature: "copilot",
+            apiKeyMasked,
+            tokensUsed: data?.usage?.total_tokens || 0,
+            matchedGuidelines,
+            consult: consult ?? {
+              differentialDiagnoses: [],
+              targetedWorkup: [],
+              pmbjpTreatmentPlan: [],
+              redFlags: [],
+              followUpAndCounseling: raw.slice(0, 800),
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("[COPILOT_CONSULT] Falling back to STG rules:", err);
+    }
+  }
+
+  return c.json({
+    success: true,
+    source: "stg-copilot-rules",
+    feature: "copilot",
+    apiKeyMasked,
+    matchedGuidelines,
+    consult: {
+      differentialDiagnoses: [{ diagnosis: "OPD clinical evaluation required", likelihood: "Primary", reasoning: complaint }],
+      targetedWorkup: ["CBC", "RBS", "RFT"],
+      pmbjpTreatmentPlan: [],
+      redFlags: ["Hypoxia", "Hypotension", "Altered sensorium"],
+      followUpAndCounseling: "Review in OPD with investigation results.",
+    },
+  });
 });
