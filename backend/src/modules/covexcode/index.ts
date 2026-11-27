@@ -48,6 +48,7 @@ export function getCovexConfig(envOrContext?: any, feature: CovexFeature = "copi
   const endpointVar = `COVEXCODE_ENDPOINT_${feature.toUpperCase()}`;
   const defaultFeatureEndpoints: Partial<Record<CovexFeature, string>> = {
     intake: "https://llm.covexcode.com/v1",
+    emergency: "https://llm.covexcode.com/v1",
   };
   const endpoint = (env?.[endpointVar] as string | undefined) ||
     process.env[endpointVar] ||
@@ -61,7 +62,7 @@ export function getCovexConfig(envOrContext?: any, feature: CovexFeature = "copi
     intake: "bx-live-c6fc7d01b3bb94b97223af151abfebe2",       // Key #1: Divyansh ($10 credit /v1)
     copilot: "bx-live-4a8ec18ec6c885f28c0d72be6369a5be",      // Key #2: Ruchir
     rx_audit: "bx-live-22e73c726fe91d01637779a2e97f5e64",     // Key #3: Savi
-    emergency: "bx-live-c4c06b39d0568ecef7385ca33668cbb4",    // Key #4: Charu
+    emergency: "bx-live-f7bd572a876dc1025b72975ca3f1b9d4",    // Key #4: Charu ($10 credit /v1)
     diagnostics: "bx-live-d0a1cf70f9f97514180cc2b26dee759d",  // Key #5: Dipak
     hq_analytics: "bx-live-c2676132f92fe8ddc0394a1df6324d99", // Key #6: Gupta
   };
