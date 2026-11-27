@@ -1,6 +1,13 @@
 import { Hono } from "hono";
 import { computeLedger, predictRefillWarning, savingsMeter } from "../../../../packages/engine";
+import { checkHerbDrugInteractions, KNOWN_HERB_DRUG_INTERACTIONS } from "../../../../packages/engine/herbDrugInteractions";
 import { demoPlan } from "../../../../packages/shared/demo";
+import { getCovexConfig } from "../covexcode";
+import {
+  EXPANDED_HERB_DRUG_REGISTRY,
+  PMBJP_FORMULARY_CATALOG,
+  RX_AUDIT_BENCHMARKS,
+} from "./pmbjpKnowledge";
 
 export const opsRouter = new Hono();
 
@@ -671,5 +678,170 @@ opsRouter.get("/ledger/summary", async (c) => {
       { clinicId: "clinic-ayush-003", name: "AYUSH Integrated Holistic Center", revenuePaise: 3100000, profitPaise: 620000 },
     ],
     liveSalesRecorded: salesStore.length,
+  });
+});
+
+// GET /api/v1/ops/formulary — PMBJP Jan Aushadhi & Expanded Pharmacovigilance Knowledge Base
+opsRouter.get("/formulary", (c) => {
+  const q = (c.req.query("q") || "").trim().toLowerCase();
+  const specialty = (c.req.query("specialty") || "").trim().toLowerCase();
+
+  const matchesQuery = (text: string) => !q || text.toLowerCase().includes(q);
+  const formulary = PMBJP_FORMULARY_CATALOG.filter((item) => {
+    const okSpec = !specialty || item.specialty.toLowerCase().includes(specialty);
+    const okQ = matchesQuery(`${item.genericSalt} ${item.brandedExample} ${item.specialty} ${item.pmbjpCode}`);
+    return okSpec && okQ;
+  });
+
+  const combinedInteractions = [...KNOWN_HERB_DRUG_INTERACTIONS, ...EXPANDED_HERB_DRUG_REGISTRY];
+  const interactions = combinedInteractions.filter((item) =>
+    matchesQuery(`${item.allopathicDrug} ${item.ayurvedicHerb} ${item.clinicalRisk} ${item.severity}`),
+  );
+
+  const avgSavingsPct = PMBJP_FORMULARY_CATALOG.length
+    ? Math.round(PMBJP_FORMULARY_CATALOG.reduce((s, x) => s + x.savingsPct, 0) / PMBJP_FORMULARY_CATALOG.length)
+    : 78;
+
+  return c.json({
+    success: true,
+    stats: {
+      totalGenerics: PMBJP_FORMULARY_CATALOG.length,
+      totalInteractions: combinedInteractions.length,
+      totalAuditedBenchmarks: RX_AUDIT_BENCHMARKS.length,
+      avgSavingsPct,
+    },
+    formulary: formulary.slice(0, 100),
+    interactions: interactions.slice(0, 100),
+    benchmarks: RX_AUDIT_BENCHMARKS.slice(0, 30),
+  });
+});
+
+// POST /api/v1/ops/rx-audit — Live POS & Pharmacy PMBJP Generic + Interaction Audit (Covexcode rx_audit)
+opsRouter.post("/rx-audit", async (c) => {
+  const isTestEnv = Boolean(process.env.VITEST || process.env.NODE_ENV === "test");
+  const body = ((await c.req.json().catch(() => ({}))) || {}) as {
+    drugs?: Array<string | { name?: string; drug?: string; salt?: string; dose?: string }>;
+    herbs?: Array<string | { name?: string; herb?: string }>;
+    clinicId?: string;
+    patientContext?: {
+      age?: number;
+      sex?: string;
+      eGFR?: number;
+      pregnant?: boolean;
+      lactating?: boolean;
+      allergies?: string[];
+      diagnosis?: string;
+      hepaticImpairment?: string;
+    };
+  };
+
+  const drugList = (body.drugs && body.drugs.length ? body.drugs : ["Atorvastatin 20mg", "Aspirin 75mg", "Metformin 500mg"])
+    .map((d) => (typeof d === "string" ? d : d.drug || d.name || d.salt || "").trim())
+    .filter(Boolean);
+  const herbList = (body.herbs || [])
+    .map((h) => (typeof h === "string" ? h : h.herb || h.name || "").trim())
+    .filter(Boolean);
+
+  const deterministicHerbFlags = checkHerbDrugInteractions(drugList, herbList);
+  const expandedMatches = EXPANDED_HERB_DRUG_REGISTRY.filter((entry) => {
+    const alloHit = drugList.some((d) => d.toLowerCase().includes(entry.allopathicDrug.toLowerCase()));
+    const herbHit = herbList.some((h) => h.toLowerCase().includes((entry.ayurvedicHerb.split(" ")[0] || "").toLowerCase()));
+    return alloHit && herbHit;
+  });
+
+  const matchedCatalog = PMBJP_FORMULARY_CATALOG.filter((item) =>
+    drugList.some((d) => d.toLowerCase().includes(item.genericSalt.toLowerCase()) || d.toLowerCase().includes(item.brandedExample.toLowerCase())),
+  );
+
+  const { endpoint, apiKey, model, apiKeyMasked } = getCovexConfig(c, "rx_audit");
+  if (apiKey && !isTestEnv) {
+    try {
+      const res = await fetch(`${endpoint}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "User-Agent": "JEEVIKA-HealthOS/1.0",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are JEEVIKA's Chief Clinical Pharmacist & PMBJP Jan Aushadhi Safety Auditor. Keep internal reasoning ultra-brief and output ONLY valid, compact RFC-8259 JSON (no markdown fences, no trailing commas, escape inner quotes) with keys: \"overallRisk\" (\"CRITICAL\"|\"MODERATE\"|\"LOW\"), \"drugDrugInteractions\" (array of {pair, severity, mechanism, action}), \"herbDrugAlerts\" (array of {pair, severity, mechanism, recommendation}), \"renalHepaticPregnancyFlags\" (array of strings), \"pmbjpSubstitutions\" (array of {prescribed, genericSalt, pmbjpAlternative, ntiBlocked, estSavingsPct, brandMrpInr, janAushadhiMrpInr}), \"counselingChecklist\" (array of concise patient points).",
+            },
+            {
+              role: "user",
+              content: `Audit Rx Drugs: ${JSON.stringify(drugList)}\nConcomitant AYUSH/Herbs: ${JSON.stringify(herbList)}\nPatient Context: ${JSON.stringify(body.patientContext || {})}\nClinic: ${body.clinicId || "clinic-delhi-01"}`,
+            },
+          ],
+          max_tokens: 4096,
+          temperature: 0.1,
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        const raw = (data?.choices?.[0]?.message?.content || data?.choices?.[0]?.message?.reasoning_content || "").trim();
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        let audit: any = null;
+        if (jsonMatch) {
+          try {
+            audit = JSON.parse(jsonMatch[0]);
+          } catch {
+            audit = null;
+          }
+        }
+        if (audit || raw) {
+          return c.json({
+            success: true,
+            source: "covexcode-deepseek-rx-audit",
+            feature: "rx_audit",
+            apiKeyMasked,
+            tokensUsed: data?.usage?.total_tokens || 0,
+            deterministicHerbFlags: [...deterministicHerbFlags, ...expandedMatches],
+            catalogMatches: matchedCatalog,
+            audit: audit ?? {
+              overallRisk: deterministicHerbFlags.some((x) => x.severity === "CONTRAINDICATED") ? "CRITICAL" : "MODERATE",
+              drugDrugInteractions: [],
+              herbDrugAlerts: [...deterministicHerbFlags, ...expandedMatches],
+              renalHepaticPregnancyFlags: [],
+              pmbjpSubstitutions: [],
+              counselingChecklist: [raw.slice(0, 600)],
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("[RX_AUDIT] Falling back to deterministic pharmacy engine:", err);
+    }
+  }
+
+  return c.json({
+    success: true,
+    source: "deterministic-pharmacy-rules",
+    feature: "rx_audit",
+    apiKeyMasked,
+    deterministicHerbFlags: [...deterministicHerbFlags, ...expandedMatches],
+    catalogMatches: matchedCatalog,
+    audit: {
+      overallRisk: deterministicHerbFlags.some((x) => x.severity === "CONTRAINDICATED") ? "CRITICAL" : "LOW",
+      drugDrugInteractions: [],
+      herbDrugAlerts: [...deterministicHerbFlags, ...expandedMatches],
+      renalHepaticPregnancyFlags: [],
+      pmbjpSubstitutions: matchedCatalog.map((m) => ({
+        prescribed: m.brandedExample,
+        genericSalt: m.genericSalt,
+        pmbjpAlternative: `${m.genericSalt} ${m.strengthForm} (${m.pmbjpCode})`,
+        ntiBlocked: m.ntiNarrowIndex,
+        estSavingsPct: m.savingsPct,
+        brandMrpInr: m.brandMrpInr,
+        janAushadhiMrpInr: m.janAushadhiMrpInr,
+      })),
+      counselingChecklist: ["Take prescribed doses consistently; confirm NTI salts with dispensing pharmacist before switching brands."],
+    },
   });
 });
