@@ -279,17 +279,17 @@ intakeRouter.post("/soap", async (c) => {
           messages: [
             {
               role: "system",
-              content: 'You are JEEVIKA\'s clinical SOAP documentation assistant for Indian clinics. Output ONLY raw JSON with keys: "subjective", "objective", "assessment", "plan" (concise, NMC RMP compliant, include PMBJP Jan Aushadhi generic options in plan).'
+              content: 'You are JEEVIKA\'s clinical SOAP documentation assistant for Indian clinics. Keep reasoning ultra-brief and output ONLY raw JSON with keys: "subjective", "objective", "assessment", "plan" (concise, NMC RMP compliant, include PMBJP Jan Aushadhi generic options in plan).'
             },
             {
               role: "user",
               content: `Patient complaint: "${complaint}"\nVitals: ${JSON.stringify(body.vitals || {})}\nHistory: ${body.history || "None provided"}`
             }
           ],
-          max_tokens: 900,
+          max_tokens: 2500,
           temperature: 0.2,
         }),
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(25000),
       });
       if (covexRes.ok) {
         const data = (await covexRes.json()) as any;
