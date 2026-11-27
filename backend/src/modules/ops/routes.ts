@@ -8,6 +8,10 @@ import {
   PMBJP_FORMULARY_CATALOG,
   RX_AUDIT_BENCHMARKS,
 } from "./pmbjpKnowledge";
+import {
+  HQ_OUTBREAK_PLAYBOOKS,
+  HQ_PROCUREMENT_BRIEFS,
+} from "./hqAnalyticsKnowledge";
 
 export const opsRouter = new Hono();
 
@@ -842,6 +846,135 @@ opsRouter.post("/rx-audit", async (c) => {
         janAushadhiMrpInr: m.janAushadhiMrpInr,
       })),
       counselingChecklist: ["Take prescribed doses consistently; confirm NTI salts with dispensing pharmacist before switching brands."],
+    },
+  });
+});
+
+// GET /api/v1/ops/hq/intelligence — HQ Command Seasonal Playbooks & Multi-Clinic Stock Radar
+opsRouter.get("/hq/intelligence", (c) => {
+  const q = (c.req.query("q") || "").trim().toLowerCase();
+  const playbooks = HQ_OUTBREAK_PLAYBOOKS.filter((p) =>
+    !q || `${p.scenario} ${p.seasonRegion} ${p.essentialPmbjpBufferDrugs.join(" ")}`.toLowerCase().includes(q),
+  );
+  const lowStockAlerts: Array<{ clinicId: string; salt: string; stockUnits: number; reorderLevel: number }> = [];
+  for (const [clinicId, items] of clinicStockStore.entries()) {
+    for (const item of items) {
+      if (item.stockUnits < item.reorderLevel) {
+        lowStockAlerts.push({ clinicId, salt: item.salt, stockUnits: item.stockUnits, reorderLevel: item.reorderLevel });
+      }
+    }
+  }
+  return c.json({
+    success: true,
+    stats: {
+      totalPlaybooks: HQ_OUTBREAK_PLAYBOOKS.length,
+      totalProcurementBriefs: HQ_PROCUREMENT_BRIEFS.length,
+      activeLowStockAlerts: lowStockAlerts.length,
+      hqDepotSkus: Object.keys(hqDepotStock).length,
+    },
+    lowStockAlerts,
+    playbooks: playbooks.slice(0, 80),
+    briefs: HQ_PROCUREMENT_BRIEFS.slice(0, 30),
+  });
+});
+
+// POST /api/v1/ops/hq/forecast — Multi-Clinic Demand Forecast & Redistribution Planner (Gupta hq_analytics)
+opsRouter.post("/hq/forecast", async (c) => {
+  const isTestEnv = Boolean(process.env.VITEST || process.env.NODE_ENV === "test");
+  const body = ((await c.req.json().catch(() => ({}))) || {}) as {
+    regionHub?: string;
+    season?: string;
+    epidemiologySignal?: string;
+    budgetCapInr?: number;
+    clinicIds?: string[];
+  };
+
+  const regionHub = body.regionHub || "Delhi-NCR & North Cluster";
+  const season = body.season || "Post-Monsoon Vector Surge";
+  const signal = body.epidemiologySignal || "Dengue NS1 & Acute Febrile OPD visits +38% WoW; Metformin-500 & Amox-Clav stock below reorder level in Delhi-01";
+
+  const snapshot: Array<{ clinicId: string; lowItems: string[]; expiringSoon: string[] }> = [];
+  for (const [clinicId, items] of clinicStockStore.entries()) {
+    snapshot.push({
+      clinicId,
+      lowItems: items.filter((i) => i.stockUnits < i.reorderLevel).map((i) => `${i.salt} (${i.stockUnits}/${i.reorderLevel})`),
+      expiringSoon: items.filter((i) => i.expiry <= "2027-02-01").map((i) => `${i.brand} exp ${i.expiry}`),
+    });
+  }
+
+  const { endpoint, apiKey, model, apiKeyMasked } = getCovexConfig(c, "hq_analytics");
+  if (apiKey && !isTestEnv) {
+    try {
+      const res = await fetch(`${endpoint}/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "User-Agent": "JEEVIKA-HealthOS/1.0",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are JEEVIKA's Chief Medical Supply Chain & HQ Operations Strategist. Keep internal reasoning ultra-brief and output ONLY valid compact RFC-8259 JSON (no markdown fences) with keys: \"riskLevel\" (\"HIGH\"|\"MODERATE\"|\"LOW\"), \"urgentInterClinicTransfers\" (array of {fromDepotOrClinic, toClinic, genericSalt, units, rationale}), \"pmbjpProcurementOrder\" (array of {genericSalt, pmbjpUnits, estCostInr, savingsVsBrandedInr}), \"expirySalvageActions\" (array of strings), \"cmoExecutiveBrief\" (string).",
+            },
+            {
+              role: "user",
+              content: `Region: ${regionHub} | Season: ${season}\nEpidemiology Signal: ${signal}\nBudget Cap: INR ${body.budgetCapInr || 250000}\nLive Clinic Stock Alerts: ${JSON.stringify(snapshot)}\nHQ Depot On-Hand: ${JSON.stringify(hqDepotStock)}`,
+            },
+          ],
+          max_tokens: 4096,
+          temperature: 0.15,
+        }),
+        signal: AbortSignal.timeout(45000),
+      });
+
+      if (res.ok) {
+        const data = (await res.json()) as any;
+        const raw = (data?.choices?.[0]?.message?.content || data?.choices?.[0]?.message?.reasoning_content || "").trim();
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        let forecast: any = null;
+        if (jsonMatch) {
+          try { forecast = JSON.parse(jsonMatch[0]); } catch { forecast = null; }
+        }
+        if (forecast || raw) {
+          return c.json({
+            success: true,
+            source: "covexcode-deepseek-hq-analytics",
+            feature: "hq_analytics",
+            apiKeyMasked,
+            tokensUsed: data?.usage?.total_tokens || 0,
+            clinicSnapshot: snapshot,
+            forecast: forecast ?? {
+              riskLevel: "MODERATE",
+              urgentInterClinicTransfers: [],
+              pmbjpProcurementOrder: [],
+              expirySalvageActions: [],
+              cmoExecutiveBrief: raw.slice(0, 800),
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("[HQ_FORECAST] Falling back to deterministic radar rules:", err);
+    }
+  }
+
+  return c.json({
+    success: true,
+    source: "deterministic-hq-radar",
+    feature: "hq_analytics",
+    apiKeyMasked,
+    clinicSnapshot: snapshot,
+    forecast: {
+      riskLevel: "MODERATE",
+      urgentInterClinicTransfers: [{ fromDepotOrClinic: "hq-depot", toClinic: "clinic-delhi-01", genericSalt: "metformin", units: 200, rationale: "Below reorder threshold" }],
+      pmbjpProcurementOrder: [],
+      expirySalvageActions: ["Prioritize FEFO issue for near-expiry Metformin batch BAT-MET-01"],
+      cmoExecutiveBrief: "Deterministic HQ stock transfer plan generated.",
     },
   });
 });
